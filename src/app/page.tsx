@@ -200,6 +200,32 @@ function HomeContent() {
       
       // Handle Flask API response
       if (data.success) {
+        // Console log the triangles data for debugging
+        console.log('=== FRONTEND DEBUG: TRIANGLES DATA ===');
+        console.log('Full API Response:', data);
+        console.log('Detections:', data.detections);
+        console.log('Analysis Report:', data.analysis_report);
+        console.log('Triangle Analysis:', data.analysis_report?.triangle_analysis);
+        
+        // Log triangle data for each detection
+        if (data.detections) {
+          console.log('Detection Triangle Details:');
+          data.detections.forEach((detection: any, index: any) => {
+            console.log(`Detection ${index}:`, {
+              id: detection.id,
+              class: detection.class,
+              confidence: detection.confidence,
+              hasTriangleVertices: !!detection.triangle_vertices,
+              triangleVertices: detection.triangle_vertices,
+              hasArrowStart: !!detection.arrow_start,
+              hasArrowEnd: !!detection.arrow_end,
+              arrowStart: detection.arrow_start,
+              arrowEnd: detection.arrow_end
+            });
+          });
+        }
+        console.log('=== END FRONTEND DEBUG ===');
+        
         const parsed = extractDetectionsAndImageSize(data, 0.3);
         setOverlay(parsed);
         setProcessedImageSrc(data.processed_image || previewSrc);
@@ -637,36 +663,40 @@ function HomeContent() {
                   
                   {/* Stacked Bar Chart */}
                   <div className="relative">
-                    <div className="h-32 bg-neutral-800 rounded-lg overflow-hidden flex flex-col justify-end">
-                      {/* Strong (Green Gradient) */}
-                      <div 
-                        className="flex items-center justify-end pr-4"
-                        style={{ 
-                          height: `${(analysisReport.class_counts.strong / analysisReport.total_count) * 128}px`,
-                          background: 'linear-gradient(180deg, #41D590 16.51%, #079600 86.43%)'
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.strong}</span>
+                    <div className="flex items-center justify-center">
+                      <div className="h-32 bg-neutral-800 rounded-lg overflow-hidden flex flex-col justify-end w-1/4">
+                        {/* Strong (Green Gradient) */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            height: `${(analysisReport.class_counts.strong / analysisReport.total_count) * 128}px`,
+                            background: 'linear-gradient(180deg, #41D590 16.51%, #079600 86.43%)'
+                          }}
+                        />
+                        {/* Medium (Orange) */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            height: `${(analysisReport.class_counts.medium / analysisReport.total_count) * 128}px`,
+                            background: 'linear-gradient(180deg, #FFB800 16.51%, #FF6A00 86.43%)'
+                          }}
+                        />
+                        {/* Weak (Red) */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            height: `${(analysisReport.class_counts.weak / analysisReport.total_count) * 128}px`,
+                            background: 'linear-gradient(180deg, #F06338 16.51%, #F06338 86.43%)'
+                          }}
+                        />
                       </div>
-                      {/* Medium (Orange) */}
-                      <div 
-                        className="flex items-center justify-end pr-4"
-                        style={{ 
-                          height: `${(analysisReport.class_counts.medium / analysisReport.total_count) * 128}px`,
-                          background: 'linear-gradient(180deg, #FFB800 16.51%, #FF6A00 86.43%)'
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.medium}</span>
-                      </div>
-                      {/* Weak (Red) */}
-                      <div 
-                        className="flex items-center justify-end pr-4"
-                        style={{ 
-                          height: `${(analysisReport.class_counts.weak / analysisReport.total_count) * 128}px`,
-                          background: 'linear-gradient(180deg, #F06338 16.51%, #F06338 86.43%)'
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.weak}</span>
+                      {/* Numbers on right */}
+                      <div className="flex flex-col justify-end h-32 ml-2">
+                        <div className="h-[128px] flex flex-col justify-between py-1">
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.strong}</span>
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.medium}</span>
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.weak}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -697,33 +727,40 @@ function HomeContent() {
                   
                   {/* Stacked Bar Chart */}
                   <div className="relative">
-                    <div className="h-32 bg-neutral-800 rounded-lg overflow-hidden flex flex-col justify-end">
-                      {/* Strong (Green) - Estimated width contribution */}
-                      <div 
-                        className="bg-green-500 flex items-center justify-end pr-4"
-                        style={{ height: `${(analysisReport.class_counts.strong / analysisReport.total_count) * 128}px` }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.strong}</span>
+                    <div className="flex justify-center">
+                      <div className="h-32 bg-neutral-800 rounded-lg overflow-hidden flex flex-col justify-end w-1/4">
+                        {/* Strong (Green) - Estimated width contribution */}
+                        <div 
+                          className="bg-green-500 flex items-center"
+                          style={{ height: `${(analysisReport.class_counts.strong / analysisReport.total_count) * 128}px` }}
+                        />
+                        {/* Medium (Orange) */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            height: `${(analysisReport.class_counts.medium / analysisReport.total_count) * 128}px`,
+                            background: 'linear-gradient(180deg, #FFB800 16.51%, #FF6A00 86.43%)'
+                          }}
+                        />
+                        {/* Weak (Red) */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            height: `${(analysisReport.class_counts.weak / analysisReport.total_count) * 128}px`,
+                            background: 'linear-gradient(180deg, #F06338 16.51%, #F06338 86.43%)'
+                          }}
+                        />
                       </div>
-                      {/* Medium (Orange) */}
-                      <div 
-                        className="flex items-center justify-end pr-4"
-                        style={{ 
-                          height: `${(analysisReport.class_counts.medium / analysisReport.total_count) * 128}px`,
-                          background: 'linear-gradient(180deg, #FFB800 16.51%, #FF6A00 86.43%)'
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.medium}</span>
-                      </div>
-                      {/* Weak (Red) */}
-                      <div 
-                        className="flex items-center justify-end pr-4"
-                        style={{ 
-                          height: `${(analysisReport.class_counts.weak / analysisReport.total_count) * 128}px`,
-                          background: 'linear-gradient(180deg, #F06338 16.51%, #F06338 86.43%)'
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">{analysisReport.class_counts.weak}</span>
+                      <div className="flex flex-col justify-end ml-2">
+                        <div style={{height: `${(analysisReport.class_counts.strong / analysisReport.total_count) * 128}px`}} className="flex items-center">
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.strong}</span>
+                        </div>
+                        <div style={{height: `${(analysisReport.class_counts.medium / analysisReport.total_count) * 128}px`}} className="flex items-center">
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.medium}</span>
+                        </div>
+                        <div style={{height: `${(analysisReport.class_counts.weak / analysisReport.total_count) * 128}px`}} className="flex items-center">
+                          <span className="text-white font-bold text-sm">{analysisReport.class_counts.weak}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

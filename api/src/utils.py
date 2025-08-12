@@ -3,191 +3,210 @@ Utility functions for the Hair Follicle Segmentation app.
 Contains drawing functions and other helper utilities.
 """
 
-import cv2
-import numpy as np
 from typing import Tuple
+from PIL import Image, ImageDraw
+import math
 
 from .config import (
     COLORS, TRIANGLE_THICKNESS, ARROW_THICKNESS, POINT_RADIUS, 
     CONTOUR_THICKNESS, ARROW_TIP_LENGTH
 )
+from .triangle_detector import calculate_std
 
 
-def draw_arrow(image: np.ndarray, start_point: np.ndarray, end_point: np.ndarray, 
+def _bgr_to_rgb(color: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    b, g, r = color
+    return (r, g, b)
+
+
+def draw_arrow(image: Image.Image, start_point, end_point, 
                color: Tuple[int, int, int] = COLORS['arrow'], 
-               thickness: int = ARROW_THICKNESS) -> np.ndarray:
+               thickness: int = ARROW_THICKNESS) -> Image.Image:
     """
-    Draw an arrow from start_point to end_point.
-    
-    Args:
-        image: Input image
-        start_point: Starting point of the arrow
-        end_point: Ending point of the arrow
-        color: BGR color tuple
-        thickness: Line thickness
-        
-    Returns:
-        Image with arrow drawn
+    Draw an arrow from start_point to end_point on a PIL Image.
     """
-    start_point = tuple(map(int, start_point))
-    end_point = tuple(map(int, end_point))
-    
-    # Draw the arrow
-    cv2.arrowedLine(image, start_point, end_point, color, thickness, tipLength=ARROW_TIP_LENGTH)
-    
+    if image is None or start_point is None or end_point is None:
+        return image
+
+    draw = ImageDraw.Draw(image)
+    sx, sy = float(start_point[0]), float(start_point[1])
+    ex, ey = float(end_point[0]), float(end_point[1])
+
+    # Convert BGR config color to RGB for PIL
+    rgb = _bgr_to_rgb(color)
+
+    # Draw main line
+    draw.line([(sx, sy), (ex, ey)], fill=rgb, width=int(max(1, thickness)))
+
+    # Draw arrow head
+    dx = ex - sx
+    dy = ey - sy
+    length = (dx**2 + dy**2) ** 0.5 or 1.0
+    ux, uy = dx / length, dy / length
+
+    head_len = 8.0  # pixels
+    head_width = 6.0
+
+    # Perpendicular vector
+    px, py = -uy, ux
+
+    # Base of arrow head
+    bx, by = ex - ux * head_len, ey - uy * head_len
+    left = (bx + px * head_width * 0.5, by + py * head_width * 0.5)
+    right = (bx - px * head_width * 0.5, by - py * head_width * 0.5)
+
+    draw.polygon([left, (ex, ey), right], fill=rgb)
+
     return image
 
 
-def draw_triangle(image: np.ndarray, triangle: np.ndarray, 
+def draw_line(image: Image.Image, start_point, end_point,
+              color: Tuple[int, int, int], thickness: int) -> Image.Image:
+    """Draw a simple line on a PIL image."""
+    if image is None or start_point is None or end_point is None:
+        return image
+    draw = ImageDraw.Draw(image)
+    rgb = _bgr_to_rgb(color)
+    draw.line([(float(start_point[0]), float(start_point[1])),
+               (float(end_point[0]), float(end_point[1]))],
+              fill=rgb, width=int(max(1, thickness)))
+    return image
+
+
+def draw_triangle(image, triangle, 
                  color: Tuple[int, int, int] = COLORS['triangle'], 
-                 thickness: int = TRIANGLE_THICKNESS) -> np.ndarray:
+                 thickness: int = TRIANGLE_THICKNESS):
     """
     Draw a triangle on the image.
+    DEPRECATED: Drawing is now handled by frontend canvas.
     
     Args:
         image: Input image
-        triangle: Triangle vertices as numpy array
-        color: BGR color tuple
+        triangle: Triangle vertices
+        color: Color tuple
         thickness: Line thickness
         
     Returns:
-        Image with triangle drawn
+        Original image (no drawing performed)
     """
-    cv2.polylines(image, [triangle.astype(np.int32)], True, color, thickness)
+    # Drawing is now handled by frontend
     return image
 
 
-def draw_point(image: np.ndarray, point: np.ndarray, 
-               color: Tuple[int, int, int], radius: int = POINT_RADIUS) -> np.ndarray:
+def draw_point(image, point, 
+               color: Tuple[int, int, int], radius: int = POINT_RADIUS):
     """
     Draw a point (filled circle) on the image.
+    DEPRECATED: Drawing is now handled by frontend canvas.
     
     Args:
         image: Input image
         point: Point coordinates
-        color: BGR color tuple
+        color: Color tuple
         radius: Circle radius
         
     Returns:
-        Image with point drawn
+        Original image (no drawing performed)
     """
-    cv2.circle(image, tuple(map(int, point)), radius, color, -1)
+    # Drawing is now handled by frontend
     return image
 
 
-def draw_contour(image: np.ndarray, contour: np.ndarray, 
+def draw_contour(image, contour, 
                 color: Tuple[int, int, int] = COLORS['contour'], 
-                thickness: int = CONTOUR_THICKNESS) -> np.ndarray:
+                thickness: int = CONTOUR_THICKNESS):
     """
     Draw a contour on the image.
+    DEPRECATED: Drawing is now handled by frontend canvas.
     
     Args:
         image: Input image
         contour: Contour points
-        color: BGR color tuple
+        color: Color tuple
         thickness: Line thickness
         
     Returns:
-        Image with contour drawn
+        Original image (no drawing performed)
     """
-    cv2.polylines(image, [contour], True, color, thickness)
+    # Drawing is now handled by frontend
     return image
 
 
-def draw_visualization_elements(image: np.ndarray, triangle: np.ndarray, 
-                               middle_point: np.ndarray, apex: np.ndarray, 
-                               contour: np.ndarray, class_info: dict = None) -> np.ndarray:
+def draw_visualization_elements(image: Image.Image, triangle, 
+                               middle_point, apex, 
+                               contour, class_info: dict = None) -> Image.Image:
     """
-    Draw visualization elements for a single detection - colored arrows only.
-    
-    Args:
-        image: Input image
-        triangle: Triangle vertices (used for calculations but not drawn)
-        middle_point: Middle point of shortest side
-        apex: Apex point
-        contour: Original contour (not drawn)
-        class_info: Dictionary with class information for color selection
-        
-    Returns:
-        Image with colored arrow drawn
+    Draw visualization elements for a single detection - equal-length line only.
     """
-    # Determine arrow color based on class
-    from .config import HAIR_STRAND_COLORS
-    
-    arrow_color = HAIR_STRAND_COLORS['default']  # Default green
-    
-    if class_info:
-        class_id = class_info.get('class_id', 0)
-        class_name = class_info.get('class_name', '')
-        
-        # Try class ID first, then class name
-        if class_id in HAIR_STRAND_COLORS:
-            arrow_color = HAIR_STRAND_COLORS[class_id]
-        elif class_name in HAIR_STRAND_COLORS:
-            arrow_color = HAIR_STRAND_COLORS[class_name]
-    
-    # Draw colored arrow from middle of shortest side to apex
-    image = draw_arrow_with_color(image, middle_point, apex, arrow_color)
-    
-    return image
+    # Determine arrow color based on class info
+    try:
+        from .config import HAIR_STRAND_COLORS
+        arrow_color = HAIR_STRAND_COLORS.get('default', (0, 255, 0))
+        if class_info:
+            cls = (class_info.get('class_name') or '').lower()
+            if 'strong' in cls:
+                arrow_color = HAIR_STRAND_COLORS.get('strong', arrow_color)
+            elif 'medium' in cls or 'intermediate' in cls:
+                arrow_color = HAIR_STRAND_COLORS.get('medium', arrow_color)
+            elif 'weak' in cls:
+                arrow_color = HAIR_STRAND_COLORS.get('weak', arrow_color)
+
+        # Compute fixed-length line in the direction middle_point -> apex
+        sx, sy = float(middle_point[0]), float(middle_point[1])
+        dx, dy = float(apex[0]) - sx, float(apex[1]) - sy
+        norm = math.hypot(dx, dy) or 1.0
+        ux, uy = dx / norm, dy / norm
+        FIXED_LEN = 80.0  # pixels (longer lines)
+        ex, ey = sx + ux * FIXED_LEN, sy + uy * FIXED_LEN
+        image = draw_line(image, (sx, sy), (ex, ey), arrow_color, ARROW_THICKNESS)
+        return image
+    except Exception:
+        return image
 
 
-def draw_arrow_with_color(image: np.ndarray, start_point: np.ndarray, end_point: np.ndarray, color: tuple) -> np.ndarray:
+def draw_arrow_with_color(image, start_point, end_point, color: tuple):
     """
     Draw an arrow with specified color.
+    DEPRECATED: Drawing is now handled by frontend canvas.
     
     Args:
         image: Input image
         start_point: Starting point of the arrow
         end_point: End point of the arrow (tip)
-        color: BGR color tuple
+        color: Color tuple
         
     Returns:
-        Image with arrow drawn
+        Original image (no drawing performed)
     """
-    from .config import ARROW_THICKNESS, ARROW_TIP_LENGTH
-    
-    start_point = tuple(map(int, start_point))
-    end_point = tuple(map(int, end_point))
-    
-    # Draw arrow line and tip
-    cv2.arrowedLine(
-        image, 
-        start_point, 
-        end_point, 
-        color, 
-        ARROW_THICKNESS, 
-        tipLength=ARROW_TIP_LENGTH
-    )
-    
+    # Drawing is now handled by frontend
     return image
 
 
-def convert_bgr_to_rgb(image: np.ndarray) -> np.ndarray:
+def convert_bgr_to_rgb(image):
     """
-    Convert BGR image to RGB for display in Streamlit.
+    Convert BGR image to RGB - now deprecated as we use PIL only.
     
     Args:
-        image: BGR image array
+        image: PIL Image or any image data
         
     Returns:
-        RGB image array
+        Original image (no conversion needed for PIL)
     """
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # With PIL, we don't need BGR conversion
+    return image
 
 
-def convert_rgb_to_bgr(image: np.ndarray) -> np.ndarray:
+def convert_rgb_to_bgr(image):
     """
-    Convert RGB image to BGR for OpenCV processing.
+    Convert RGB image to BGR - now deprecated as we use PIL only.
     
     Args:
-        image: RGB image array
+        image: PIL Image or any image data
         
     Returns:
-        BGR image array
+        Original image (no conversion needed for PIL)
     """
-    if len(image.shape) == 3 and image.shape[2] == 3:
-        return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    # With PIL, we don't need BGR conversion
     return image
 
 
@@ -230,12 +249,12 @@ def validate_workflow_id(workflow_id: str) -> bool:
     return bool(workflow_id and workflow_id.strip())
 
 
-def get_image_info(image: np.ndarray) -> dict:
+def get_image_info(image) -> dict:
     """
     Get basic information about an image.
     
     Args:
-        image: Input image array
+        image: PIL Image object
         
     Returns:
         Dictionary with image information
@@ -243,15 +262,30 @@ def get_image_info(image: np.ndarray) -> dict:
     if image is None:
         return {}
     
-    height, width = image.shape[:2]
-    channels = image.shape[2] if len(image.shape) > 2 else 1
+    # Handle PIL Image
+    if hasattr(image, 'size'):
+        width, height = image.size
+        mode = image.mode
+        
+        # Determine number of channels from mode
+        if mode == 'L':  # Grayscale
+            channels = 1
+        elif mode == 'RGB':
+            channels = 3
+        elif mode == 'RGBA':
+            channels = 4
+        else:
+            channels = len(mode) if isinstance(mode, str) else 3
+    else:
+        # Fallback for other image types
+        width, height, channels = 0, 0, 0
     
     return {
         'width': width,
         'height': height,
         'channels': channels,
-        'shape': image.shape,
-        'dtype': str(image.dtype)
+        'size': (width, height),
+        'mode': getattr(image, 'mode', 'RGB')
     } 
 
 
@@ -332,10 +366,10 @@ def generate_hair_analysis_report(detections: list, analysis_results: list, imag
     # Calculate confidence statistics
     confidence_stats = {
         'overall': {
-            'average': float(np.mean(confidence_values)) if confidence_values else 0.0,
-            'min': float(np.min(confidence_values)) if confidence_values else 0.0,
-            'max': float(np.max(confidence_values)) if confidence_values else 0.0,
-            'std': float(np.std(confidence_values)) if confidence_values else 0.0
+            'average': sum(confidence_values) / len(confidence_values) if confidence_values else 0.0,
+            'min': min(confidence_values) if confidence_values else 0.0,
+            'max': max(confidence_values) if confidence_values else 0.0,
+            'std': calculate_std(confidence_values) if confidence_values else 0.0
         }
     }
     
@@ -343,9 +377,9 @@ def generate_hair_analysis_report(detections: list, analysis_results: list, imag
     for class_type, confidences in class_confidences.items():
         if confidences:
             confidence_stats[class_type] = {
-                'average': float(np.mean(confidences)),
-                'min': float(np.min(confidences)),
-                'max': float(np.max(confidences)),
+                'average': sum(confidences) / len(confidences),
+                'min': min(confidences),
+                'max': max(confidences),
                 'count': len(confidences)
             }
         else:
@@ -664,80 +698,98 @@ def generate_hair_analysis_pdf(report: dict, image_info: dict = None) -> bytes:
     return pdf_data 
 
 
-def crop_black_borders(image, threshold: int = 10) -> np.ndarray:
+def crop_black_borders(image, threshold: int = 10):
     """
     Remove rows and columns that are almost fully black from an image.
+    Now deprecated - use crop_black_borders_pil instead.
     
     Args:
-        image: Input image as numpy array (BGR or RGB)
+        image: Input image 
         threshold: Threshold for what constitutes "almost black" (0-255)
         
     Returns:
-        Cropped image with black borders removed
+        Original image (use PIL version instead)
+    """
+    print("Warning: crop_black_borders is deprecated, use crop_black_borders_pil")
+    return image
+
+
+def crop_black_borders_pil(pil_image, threshold: int = 10):
+    """
+    Remove rows and columns that are almost fully black from a PIL Image.
+    
+    Args:
+        pil_image: PIL Image object
+        threshold: Threshold for what constitutes "almost black" (0-255)
+        
+    Returns:
+        Cropped PIL Image with black borders removed
     """
     try:
-        # Convert to grayscale for border detection
-        if len(image.shape) == 3:
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = image.copy()
+        from PIL import Image
         
-        # Find rows and columns that are not almost black
-        row_means = np.mean(gray, axis=1)  # Average across width
-        col_means = np.mean(gray, axis=0)  # Average across height
+        # Convert to grayscale for analysis
+        gray_image = pil_image.convert('L')
+        width, height = gray_image.size
+        
+        # Get pixel data as a list
+        pixels = list(gray_image.getdata())
+        
+        # Convert to 2D structure for easier processing
+        rows = []
+        for y in range(height):
+            row = pixels[y * width:(y + 1) * width]
+            rows.append(row)
         
         # Find first and last non-black rows
-        non_black_rows = np.where(row_means > threshold)[0]
-        if len(non_black_rows) == 0:
-            # If entire image is black, return original
-            return image
+        top_row = 0
+        bottom_row = height - 1
         
-        top_row = non_black_rows[0]
-        bottom_row = non_black_rows[-1]
+        for y in range(height):
+            row_mean = sum(rows[y]) / width
+            if row_mean > threshold:
+                top_row = y
+                break
+        
+        for y in range(height - 1, -1, -1):
+            row_mean = sum(rows[y]) / width
+            if row_mean > threshold:
+                bottom_row = y
+                break
         
         # Find first and last non-black columns
-        non_black_cols = np.where(col_means > threshold)[0]
-        if len(non_black_cols) == 0:
-            # If entire image is black, return original
-            return image
+        left_col = 0
+        right_col = width - 1
         
-        left_col = non_black_cols[0]
-        right_col = non_black_cols[-1]
+        for x in range(width):
+            col_pixels = [rows[y][x] for y in range(height)]
+            col_mean = sum(col_pixels) / height
+            if col_mean > threshold:
+                left_col = x
+                break
+        
+        for x in range(width - 1, -1, -1):
+            col_pixels = [rows[y][x] for y in range(height)]
+            col_mean = sum(col_pixels) / height
+            if col_mean > threshold:
+                right_col = x
+                break
+        
+        # Ensure we have valid crop bounds
+        if top_row >= bottom_row or left_col >= right_col:
+            print("Debug: No valid crop area found, returning original image")
+            return pil_image
         
         # Crop the image
-        cropped = image[top_row:bottom_row+1, left_col:right_col+1]
+        crop_box = (left_col, top_row, right_col + 1, bottom_row + 1)
+        cropped_image = pil_image.crop(crop_box)
         
-        # Ensure we don't return an empty image
-        if cropped.shape[0] == 0 or cropped.shape[1] == 0:
-            return image
-            
-        print(f"Debug: Cropped image from {image.shape} to {cropped.shape}")
-        return cropped
+        print(f"Debug: Cropped image from {pil_image.size} to {cropped_image.size}")
+        return cropped_image
         
     except Exception as e:
-        print(f"Debug: Error cropping black borders: {e}")
-        return image
-
-
-def crop_black_borders_pil(image_array, threshold: int = 10):
-    """
-    Remove rows and columns that are almost fully black from an image array.
-    
-    Args:
-        image_array: numpy array (BGR format from cv2)
-        threshold: Threshold for what constitutes "almost black" (0-255)
-        
-    Returns:
-        Cropped numpy array with black borders removed
-    """
-    try:
-        # Crop using opencv function - image_array is already numpy array
-        cropped_array = crop_black_borders(image_array, threshold)
-        return cropped_array
-        
-    except Exception as e:
-        print(f"Debug: Error cropping image: {e}")
-        return image_array 
+        print(f"Debug: Error cropping PIL image: {e}")
+        return pil_image 
 
 
 def get_demo_images() -> list:
@@ -771,21 +823,17 @@ def load_demo_image(filename: str):
         filename: Name of the demo image file
         
     Returns:
-        numpy array (BGR format) or None if file not found
+        PIL Image object or None if file not found
     """
     import os
-    import cv2
+    from PIL import Image
     
     demo_folder = "demo_images"
     image_path = os.path.join(demo_folder, filename)
     
     try:
         if os.path.exists(image_path):
-            image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-            if image is None:
-                print(f"Failed to load image: {image_path}")
-                return None
-            return image
+            return Image.open(image_path)
         else:
             print(f"Demo image not found: {image_path}")
             return None

@@ -14,15 +14,13 @@ import os
 import sys
 import base64
 import io
-import numpy as np
-import cv2
+from PIL import Image
 # Removed weasyprint and jinja2 imports - now using React PDF on frontend
-# Removed PIL import - now using cv2 for all image operations
 
 # Add the current directory to Python path to import our modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import our modular components from the copied src directory
+# Import our modular components from the src directory
 try:
     from src import (
         # Configuration
@@ -132,13 +130,7 @@ def process_image():
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file.filename:
-                # Read image file as bytes and decode with cv2
-                image_bytes = image_file.read()
-                image_array = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
-                if image_array is None:
-                    return jsonify({'error': 'Invalid image file format'}), 400
-                # Convert BGR to RGB for consistency
-                image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+                image = Image.open(image_file.stream)
                 image_source = f"Upload: {image_file.filename}"
                 logger.info(f"Received multipart image: {image_file.filename}")
         
@@ -153,32 +145,30 @@ def process_image():
                     image_data = image_data.split(',')[1]
                 
                 image_bytes = base64.b64decode(image_data)
-                image_array = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
-                if image_array is None:
-                    return jsonify({'error': 'Invalid base64 image data'}), 400
-                # Convert BGR to RGB for consistency
-                image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+                image = Image.open(io.BytesIO(image_bytes))
                 image_source = data.get('image_name', 'Base64 Image')
                 logger.info(f"Received base64 image: {image_source}")
         
         if image is None:
             return jsonify({'error': 'No image data provided'}), 400
         
-        # Image is already in RGB format from cv2 conversion above
-        original_size = (image.shape[1], image.shape[0])  # (width, height)
+        # Convert to RGB if necessary
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        original_size = image.size
         logger.info(f"Original image size: {original_size}")
         
-        # Auto-crop black borders - convert to BGR for processing
-        image_bgr = convert_rgb_to_bgr(image)
-        cropped_image_bgr = crop_black_borders_pil(image_bgr, BLACK_BORDER_THRESHOLD)
-        cropped_size = (cropped_image_bgr.shape[1], cropped_image_bgr.shape[0])  # (width, height)
+        # Auto-crop black borders
+        cropped_image = crop_black_borders_pil(image, BLACK_BORDER_THRESHOLD)
+        cropped_size = cropped_image.size
         
         auto_cropped = cropped_size != original_size
         if auto_cropped:
             logger.info(f"Auto-cropped black borders: {original_size} → {cropped_size}")
         
-        # Get image info
-        img_info = get_image_info(cropped_image_bgr)
+        # Get image info (PIL only, no numpy conversion needed)
+        img_info = get_image_info(cropped_image)
         
         # Validate configuration
         if not ROBOFLOW_API_KEY:
@@ -192,7 +182,7 @@ def process_image():
         logger.info("Processing image with Roboflow workflow...")
         
         # Save cropped image to temporary file
-        temp_path = save_temp_image(cropped_image_bgr)
+        temp_path = save_temp_image(cropped_image)
         
         try:
             # Initialize image processor
@@ -203,9 +193,6 @@ def process_image():
                 temp_path, ROBOFLOW_WORKSPACE, ROBOFLOW_WORKFLOW_ID, CONFIDENCE_THRESHOLD, USE_CACHE
             )
             
-            # Convert back to RGB for JSON serialization
-            processed_image_rgb = convert_bgr_to_rgb(processed_image)
-            
             # Generate comprehensive analysis report
             report = generate_hair_analysis_report(detections, analysis_results, img_info)
             
@@ -213,31 +200,51 @@ def process_image():
                 return jsonify({'error': f'Error generating report: {report["error"]}'}), 500
             
             # Convert processed image to base64 for JSON response
-            # Encode image as PNG using cv2
-            success, buffer = cv2.imencode('.png', cv2.cvtColor(processed_image_rgb, cv2.COLOR_RGB2BGR))
-            if not success:
-                return jsonify({'error': 'Failed to encode processed image'}), 500
-            processed_image_b64 = base64.b64encode(buffer.tobytes()).decode()
+            # processed_image is now a PIL Image object
+            processed_image_pil = processed_image if hasattr(processed_image, 'save') else cropped_image
+            buffered = io.BytesIO()
+            processed_image_pil.save(buffered, format="PNG")
+            processed_image_b64 = base64.b64encode(buffered.getvalue()).decode()
             
             # Prepare detection data for frontend
             detection_data = []
+            logger.info(f"Debug: Preparing {len(detections)} detections with {len(analysis_results)} analysis results")
+            
             for i, detection in enumerate(detections):
+                det_id = detection.get('detection_id', f'det_{i}')
                 det_data = {
-                    'id': detection.get('detection_id', f'det_{i}'),
+                    'id': det_id,
                     'class': detection.get('class', 'unknown'),
                     'confidence': detection.get('confidence', 0),
                     'points': detection.get('points', []),
                 }
+                
+                logger.info(f"Debug: Processing detection {i} with ID: {det_id}")
+                
                 # Add triangle data if available
+                triangle_found = False
                 for result in analysis_results:
-                    if result.get('detection_id') == det_data['id']:
+                    result_id = result.get('detection_id')
+                    logger.info(f"Debug: Checking analysis result with ID: {result_id}")
+                    
+                    if result_id == det_id:
+                        triangle_found = True
+                        logger.info(f"Debug: Found matching analysis result for detection {det_id}")
+                        
                         if 'triangle_vertices' in result:
                             det_data['triangle_vertices'] = result['triangle_vertices']
+                            logger.info(f"Debug: Added triangle vertices: {result['triangle_vertices']}")
                         if 'arrow_start' in result:
                             det_data['arrow_start'] = result['arrow_start']
+                            logger.info(f"Debug: Added arrow start: {result['arrow_start']}")
                         if 'arrow_end' in result:
                             det_data['arrow_end'] = result['arrow_end']
+                            logger.info(f"Debug: Added arrow end: {result['arrow_end']}")
                         break
+                
+                if not triangle_found:
+                    logger.info(f"Debug: No matching analysis result found for detection {det_id}")
+                    
                 detection_data.append(det_data)
             
             response_data = {
@@ -333,25 +340,16 @@ def get_demo_image(filename):
         if image is None:
             return jsonify({'error': f'Demo image not found: {filename}'}), 404
         
-        # Convert to base64 using cv2
-        # Convert PIL image to cv2 format if needed
-        if hasattr(image, 'mode'):  # PIL Image
-            image_array = np.array(image)
-            if len(image_array.shape) == 3:
-                image_array = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
-        else:  # already numpy array
-            image_array = image
-            
-        success, buffer = cv2.imencode('.png', image_array)
-        if not success:
-            return jsonify({'error': 'Failed to encode demo image'}), 500
-        image_b64 = base64.b64encode(buffer.tobytes()).decode()
+        # Convert to base64
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")
+        image_b64 = base64.b64encode(buffered.getvalue()).decode()
         
         return jsonify({
             'success': True,
             'filename': filename,
             'image_data': f"data:image/png;base64,{image_b64}",
-            'size': [image_array.shape[1], image_array.shape[0]]  # [width, height]
+            'size': list(image.size)
         })
         
     except Exception as e:

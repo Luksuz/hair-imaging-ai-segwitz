@@ -1,5 +1,4 @@
 flask
 inference-sdk
-opencv-python-headless
-numpy
+Pillow
 python-dotenv
