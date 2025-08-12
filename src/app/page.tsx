@@ -1310,16 +1310,40 @@ function HomeContent() {
               </button>
             )}
             
-            {/* Crop button - bottom right */}
-            <button
-              onClick={handleCrop}
-              className="absolute bottom-4 right-4 inline-flex items-center gap-2 bg-gray-600/80 hover:bg-gray-500/90 text-white px-4 py-2 rounded-full transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-              Crop
-            </button>
+            {/* Crop button and info - bottom right */}
+            <div className="absolute bottom-4 right-4 flex items-center gap-2">
+              {/* Info button with tooltip */}
+              <div className="relative group">
+                <button className="p-2 bg-gray-600/80 hover:bg-gray-500/90 text-white rounded-full transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+                {/* Tooltip */}
+                <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="font-semibold mb-1">Crop Logic:</div>
+                  <div className="text-gray-300">
+                    • Each crop removes 10% from all edges<br/>
+                    • Centers the remaining 80% of the image<br/>
+                    • Can be applied multiple times<br/>
+                    • Use Undo to revert changes
+                  </div>
+                  {/* Tooltip arrow */}
+                  <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+              
+              {/* Crop button */}
+              <button
+                onClick={handleCrop}
+                className="inline-flex items-center gap-2 bg-gray-600/80 hover:bg-gray-500/90 text-white px-4 py-2 rounded-full transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Crop
+              </button>
+            </div>
           </div>
 
           {/* Image info */}
