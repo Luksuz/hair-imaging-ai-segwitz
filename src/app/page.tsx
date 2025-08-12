@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { extractDetectionsAndImageSize, type Detection } from "@/lib/workflow";
 import { computeApproxMinimalTriangle, shortestSideMidAndApex } from "@/lib/triangle";
@@ -8,7 +8,7 @@ import { HAIR_STRAND_COLORS, mapClassNameToStrength } from "@/lib/colors";
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { PDFReport } from '@/components/pdf/PDFReport';
 
-export default function Home() {
+function HomeContent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1509,5 +1509,20 @@ export default function Home() {
     ctx.closePath();
     ctx.fill();
   }
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-neutral-400">Loading...</p>
+        </div>
+      </main>
+    }>
+      <HomeContent />
+    </Suspense>
+  );
 }
 
