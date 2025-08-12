@@ -1,0 +1,312 @@
+2025-08-12 09:18:54,596 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 09:18:54,596 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 09:20:52,987 - index - INFO - Received request: POST http://127.0.0.1:5328/api/python
+2025-08-12 09:20:52,988 - index - INFO - Request data: [{'output_image': {'type': 'base64', 'value': '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgU...', 'video_metadata': {'video_identifier': 'image', 'frame_number': 0, 'frame_timestamp': '2025-08-09T17:52:09.196767', 'fps': 30, 'measured_fps': None, 'comes_from_video_file': None}}, 'predictions': {'image': {'width': 416, 'height': 416}, 'predictions': [{'width': 9, 'height': 28, 'x': 137.5, 'y': 307, 'confidence': 0.30852288007736206, 'class_id': 1, 'points': [{'x': 133, 'y': 293}, {'x': 133, 'y': 311}, {'x': 135, 'y': 313}, {'x': 135, 'y': 320}, {'x': 136, 'y': 320}, {'x': 136, 'y': 316}, {'x': 137, 'y': 315}, {'x': 137, 'y': 313}, {'x': 138, 'y': 312}, {'x': 138, 'y': 311}, {'x': 139, 'y': 310}, {'x': 139, 'y': 305}, {'x': 140, 'y': 304}, {'x': 140, 'y': 301}, {'x': 141, 'y': 300}, {'x': 141, 'y': 293}], 'class': 'strong_follicle', 'detection_id': 'd43ad6df-5b6a-4b3f-9b6c-a6e4de1849ab', 'parent_id': 'image'}, {'width': 9, 'height': 32, 'x': 368.5, 'y': 300, 'confidence': 0.23669707775115967, 'class_id': 1, 'points': [{'x': 365, 'y': 284}, {'x': 364, 'y': 285}, {'x': 364, 'y': 310}, {'x': 364, 'y': 309}, {'x': 365, 'y': 308}, {'x': 365, 'y': 305}, {'x': 367, 'y': 303}, {'x': 367, 'y': 301}, {'x': 369, 'y': 299}, {'x': 369, 'y': 297}, {'x': 370, 'y': 296}, {'x': 370, 'y': 295}, {'x': 371, 'y': 294}, {'x': 371, 'y': 284}], 'class': 'strong_follicle', 'detection_id': 'f7b9941b-bf00-4c91-aa50-b92c4f683ecd', 'parent_id': 'image'}]}}]
+2025-08-12 09:20:52,988 - index - DEBUG - Processing predictions: {'image': {'width': 416, 'height': 416}, 'predictions': [{'width': 9, 'height': 28, 'x': 137.5, 'y': 307, 'confidence': 0.30852288007736206, 'class_id': 1, 'points': [{'x': 133, 'y': 293}, {'x': 133, 'y': 311}, {'x': 135, 'y': 313}, {'x': 135, 'y': 320}, {'x': 136, 'y': 320}, {'x': 136, 'y': 316}, {'x': 137, 'y': 315}, {'x': 137, 'y': 313}, {'x': 138, 'y': 312}, {'x': 138, 'y': 311}, {'x': 139, 'y': 310}, {'x': 139, 'y': 305}, {'x': 140, 'y': 304}, {'x': 140, 'y': 301}, {'x': 141, 'y': 300}, {'x': 141, 'y': 293}], 'class': 'strong_follicle', 'detection_id': 'd43ad6df-5b6a-4b3f-9b6c-a6e4de1849ab', 'parent_id': 'image'}, {'width': 9, 'height': 32, 'x': 368.5, 'y': 300, 'confidence': 0.23669707775115967, 'class_id': 1, 'points': [{'x': 365, 'y': 284}, {'x': 364, 'y': 285}, {'x': 364, 'y': 310}, {'x': 364, 'y': 309}, {'x': 365, 'y': 308}, {'x': 365, 'y': 305}, {'x': 367, 'y': 303}, {'x': 367, 'y': 301}, {'x': 369, 'y': 299}, {'x': 369, 'y': 297}, {'x': 370, 'y': 296}, {'x': 370, 'y': 295}, {'x': 371, 'y': 294}, {'x': 371, 'y': 284}], 'class': 'strong_follicle', 'detection_id': 'f7b9941b-bf00-4c91-aa50-b92c4f683ecd', 'parent_id': 'image'}]}
+2025-08-12 09:20:52,988 - index - INFO - Found triangle with area 205.20
+2025-08-12 09:20:52,989 - index - INFO - Found triangle with area 151.25
+2025-08-12 09:20:52,989 - index - INFO - Successfully processed 2 triangle calculations
+2025-08-12 09:20:52,989 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:20:52] "POST /api/python HTTP/1.1" 200 -
+2025-08-12 09:31:10,412 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 09:31:10,412 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 09:31:36,524 - index - INFO - Received image processing request: POST
+2025-08-12 09:31:36,543 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:31:36,543 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:31:36,543 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:31:36,544 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:31:36,544 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:31:36,544 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:31:36,544 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:31:36,681 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:31:36,684 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:31:36,761 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:31:45,109 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:31:46,142 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:31:46,156 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:31:46] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:32:35,013 - index - INFO - Received image processing request: POST
+2025-08-12 09:32:35,027 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:32:35,027 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:32:35,027 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:32:35,027 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:32:35,027 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:32:35,027 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:32:35,027 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:32:35,187 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:32:35,191 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:32:35,207 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:32:40,315 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:32:41,314 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:32:41,326 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:32:41] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:33:07,928 - index - INFO - Received image processing request: POST
+2025-08-12 09:33:07,939 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:33:07,939 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:33:07,939 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:33:07,939 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:33:07,939 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:33:07,940 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:33:07,940 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:33:08,060 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:33:08,064 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:33:08,162 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:33:12,399 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:33:13,963 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:33:13,974 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:33:13] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:35:48,573 - index - INFO - Received image processing request: POST
+2025-08-12 09:35:48,585 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:35:48,585 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:35:48,585 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:35:48,585 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:35:48,585 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:35:48,585 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:35:48,585 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:35:48,713 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:35:48,719 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:35:48,776 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:35:55,044 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:35:56,202 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:35:56,214 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:35:56] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:37:52,619 - index - INFO - Received image processing request: POST
+2025-08-12 09:37:52,632 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:37:52,632 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:37:52,632 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:37:52,632 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:37:52,632 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:37:52,632 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:37:52,632 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:37:52,763 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:37:52,769 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:37:52,830 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:37:58,542 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:37:59,711 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:37:59,723 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:37:59] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:38:46,352 - index - INFO - Received image processing request: POST
+2025-08-12 09:38:46,360 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:38:46,360 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:38:46,360 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:38:46,360 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:38:46,360 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:38:46,360 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:38:46,360 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:38:46,489 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:38:46,494 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:38:46,510 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:38:53,409 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:38:54,493 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:38:54,507 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:38:54] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:46:31,272 - index - INFO - Received image processing request: POST
+2025-08-12 09:46:31,286 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:46:31,286 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:46:31,286 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:46:31,286 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:46:31,286 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:46:31,286 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:46:31,286 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:46:31,422 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:46:31,428 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:46:31,489 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:46:36,085 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:46:37,110 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:46:37,124 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:46:37] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:47:49,277 - index - INFO - Received image processing request: POST
+2025-08-12 09:47:49,287 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:47:49,287 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:47:49,288 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:47:49,288 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:47:49,288 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:47:49,288 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:47:49,288 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:47:49,416 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:47:49,423 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:47:49,527 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:47:54,579 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:47:55,620 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:47:55,633 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:47:55] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:48:15,608 - index - INFO - Received image processing request: POST
+2025-08-12 09:48:15,615 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:48:15,615 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:48:15,615 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:48:15,615 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:48:15,615 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:48:15,615 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:48:15,615 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:48:15,737 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:48:15,743 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:48:15,759 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:48:20,957 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:48:21,976 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:48:21,990 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:48:21] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 09:56:49,388 - index - INFO - Received image processing request: POST
+2025-08-12 09:56:49,398 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 09:56:49,398 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 09:56:49,398 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 09:56:49,398 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 09:56:49,398 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 09:56:49,398 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 09:56:49,398 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 09:56:49,532 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 09:56:49,537 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 09:56:49,597 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 09:56:55,400 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 09:56:56,429 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 09:56:56,442 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 09:56:56] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:04:12,483 - index - INFO - Received image processing request: POST
+2025-08-12 10:04:12,494 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:04:12,495 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:04:12,495 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:04:12,495 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:04:12,495 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:04:12,495 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:04:12,495 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:04:12,629 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:04:12,636 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:04:12,698 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:04:18,331 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:04:19,347 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:04:19,359 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:04:19] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:06:59,486 - index - INFO - Received image processing request: POST
+2025-08-12 10:06:59,500 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:06:59,500 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:06:59,500 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:06:59,500 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:06:59,500 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:06:59,500 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:06:59,500 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:06:59,626 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:06:59,632 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:06:59,774 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:07:06,165 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:07:07,743 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:07:07,759 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:07:07] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:09:49,547 - index - INFO - Received image processing request: POST
+2025-08-12 10:09:49,557 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:09:49,557 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:09:49,557 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:09:49,557 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:09:49,557 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:09:49,557 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:09:49,557 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:09:49,694 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:09:49,700 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:09:49,763 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:10:00,276 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:10:01,330 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:10:01,343 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:10:01] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:22:06,165 - index - INFO - Received image processing request: POST
+2025-08-12 10:22:06,180 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:22:06,180 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:22:06,180 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:22:06,180 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:22:06,180 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:22:06,180 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:22:06,180 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:22:06,314 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:22:06,319 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:22:06,378 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:22:13,672 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:22:14,841 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:22:14,854 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:22:14] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:22:40,504 - index - INFO - Received image processing request: POST
+2025-08-12 10:22:40,515 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:22:40,515 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:22:40,515 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:22:40,515 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:22:40,515 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:22:40,515 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:22:40,515 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:22:40,651 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:22:40,656 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:22:40,671 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:22:49,229 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:22:50,247 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:22:50,260 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:22:50] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:52:51,965 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 10:52:51,966 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 10:52:54,462 - index - INFO - Received image processing request: POST
+2025-08-12 10:52:54,479 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 10:52:54,479 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 10:52:54,479 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 10:52:54,479 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 10:52:54,479 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 10:52:54,479 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 10:52:54,479 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 10:52:54,607 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 10:52:54,613 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 10:52:54,715 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 10:53:02,497 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 10:53:03,845 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 10:53:03,858 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:53:03] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 10:53:07,897 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:53:07] "[33mOPTIONS /api/generate-pdf HTTP/1.1[0m" 404 -
+2025-08-12 10:53:20,111 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:53:20] "[33mOPTIONS /api/generate-pdf HTTP/1.1[0m" 404 -
+2025-08-12 10:54:04,095 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:54:04] "[33mOPTIONS /api/generate-pdf HTTP/1.1[0m" 404 -
+2025-08-12 10:54:10,010 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 10:54:10,010 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 10:54:11,447 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 10:54:11] "[33mOPTIONS /api/generate-pdf HTTP/1.1[0m" 404 -
+2025-08-12 13:06:56,264 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 13:06:56,264 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 13:07:22,690 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 13:07:22] "[33mOPTIONS /api/generate-pdf HTTP/1.1[0m" 404 -
+2025-08-12 13:07:28,552 - index - INFO - Received image processing request: POST
+2025-08-12 13:07:28,579 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 13:07:28,579 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 13:07:28,579 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 13:07:28,579 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 13:07:28,579 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 13:07:28,579 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 13:07:28,579 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 13:07:28,710 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 13:07:28,714 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 13:07:28,813 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 13:07:35,659 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 13:07:36,674 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 13:07:36,686 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 13:07:36] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 13:09:43,606 - index - INFO - Received image processing request: POST
+2025-08-12 13:09:43,619 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 13:09:43,619 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 13:09:43,619 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 13:09:43,619 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 13:09:43,619 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 13:09:43,619 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 13:09:43,619 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 13:09:43,751 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 13:09:43,757 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 13:09:43,819 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 13:09:47,010 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 13:09:48,003 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 13:09:48,015 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 13:09:48] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 13:23:50,388 - index - INFO - Received image processing request: POST
+2025-08-12 13:23:50,402 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-08-12 13:23:50,402 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 3
+2025-08-12 13:23:50,402 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 3 (unknown)
+2025-08-12 13:23:50,402 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 56 9
+2025-08-12 13:23:50,402 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 77 8192
+2025-08-12 13:23:50,402 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 13:23:50,402 - index - INFO - Original image size: (3096, 2080)
+2025-08-12 13:23:50,532 - index - INFO - Auto-cropped black borders: (3096, 2080) → (1747, 2080)
+2025-08-12 13:23:50,538 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 13:23:50,615 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 13:23:56,256 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 1647522
+2025-08-12 13:23:57,276 - index - INFO - Successfully processed image with 105 detections
+2025-08-12 13:23:57,289 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 13:23:57] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 13:40:11,218 - index - INFO - Received image processing request: POST
+2025-08-12 13:40:11,220 - index - INFO - Received multipart image: tricho_1.png
+2025-08-12 13:40:11,220 - index - INFO - Original image size: (1584, 1064)
+2025-08-12 13:40:11,239 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 13:40:11,289 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 13:40:15,841 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 784418
+2025-08-12 13:40:16,618 - index - INFO - Successfully processed image with 51 detections
+2025-08-12 13:40:16,623 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 13:40:16] "POST /api/process-image HTTP/1.1" 200 -
+2025-08-12 14:19:35,730 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5328
+2025-08-12 14:19:35,730 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-12 14:21:04,750 - index - INFO - Received image processing request: POST
+2025-08-12 14:21:04,766 - index - INFO - Received multipart image: tricho_0.png
+2025-08-12 14:21:04,766 - index - INFO - Original image size: (1013, 680)
+2025-08-12 14:21:04,785 - index - INFO - Processing image with Roboflow workflow...
+2025-08-12 14:21:04,845 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): serverless.roboflow.com:443
+2025-08-12 14:21:07,616 - urllib3.connectionpool - DEBUG - https://serverless.roboflow.com:443 "POST /ranaudio/workflows/small-object-detection-sahi-5 HTTP/1.1" 200 161503
+2025-08-12 14:21:08,128 - index - INFO - Successfully processed image with 1 detections
+2025-08-12 14:21:08,130 - werkzeug - INFO - 127.0.0.1 - - [12/Aug/2025 14:21:08] "POST /api/process-image HTTP/1.1" 200 -

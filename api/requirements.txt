@@ -1,0 +1,8 @@
+flask
+inference-sdk
+opencv-python
+numpy
+Pillow
+python-dotenv
+reportlab
+pandas
