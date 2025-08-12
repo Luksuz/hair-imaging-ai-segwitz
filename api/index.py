@@ -8,17 +8,14 @@ Integrates all functionality from the Streamlit app including:
 - Authentication
 """
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 import logging
 import os
 import sys
 import base64
 import io
-import tempfile
 import numpy as np
 from PIL import Image
-import cv2
-from datetime import datetime
 # Removed weasyprint and jinja2 imports - now using React PDF on frontend
 
 # Add the current directory to Python path to import our modules

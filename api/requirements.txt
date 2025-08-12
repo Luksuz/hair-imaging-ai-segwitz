@@ -5,4 +5,4 @@ numpy
 Pillow
 python-dotenv
 reportlab
-pandas
+brotli
