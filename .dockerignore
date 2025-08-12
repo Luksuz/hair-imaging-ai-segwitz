@@ -1,0 +1,20 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+npm-debug.log
+*.log
+app.log
+**/.DS_Store
+**/Thumbs.db
+
+# local env files
+.env
+.env.*
+
+# build caches
+**/.next/cache
+**/.turbo
+
+
