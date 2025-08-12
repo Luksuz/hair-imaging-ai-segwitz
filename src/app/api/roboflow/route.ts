@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
     const flaskFormData = new FormData();
     flaskFormData.append("image", file);
 
-    const flaskResponse = await fetch("http://127.0.0.1:5328/api/process-image", {
+    // Prefer env-configured internal URL for Railway; default to localhost for dev
+    const baseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL || "http://127.0.0.1:5328";
+
+    const flaskResponse = await fetch(`${baseUrl}/api/process-image`, {
       method: "POST",
       body: flaskFormData,
     });

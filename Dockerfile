@@ -24,8 +24,8 @@ RUN pip3 install --no-cache-dir -r api/requirements.txt
 ENV NODE_ENV=production
 RUN npm run build
 
-# Expose ports: Next.js 3000 (public), Flask 5328 (internal)
-EXPOSE 3000
+# Expose ports: Next.js 8080 (public default), Flask 5328 (internal)
+EXPOSE 8080
 EXPOSE 5328
 
 # Start both processes
