@@ -719,31 +719,25 @@ def crop_black_borders(image, threshold: int = 10) -> np.ndarray:
         return image
 
 
-def crop_black_borders_pil(pil_image, threshold: int = 10):
+def crop_black_borders_pil(image_array, threshold: int = 10):
     """
-    Remove rows and columns that are almost fully black from a PIL Image.
+    Remove rows and columns that are almost fully black from an image array.
     
     Args:
-        pil_image: PIL Image object
+        image_array: numpy array (BGR format from cv2)
         threshold: Threshold for what constitutes "almost black" (0-255)
         
     Returns:
-        Cropped PIL Image with black borders removed
+        Cropped numpy array with black borders removed
     """
     try:
-        # Convert PIL to numpy array
-        image_array = np.array(pil_image)
-        
-        # Crop using opencv function
+        # Crop using opencv function - image_array is already numpy array
         cropped_array = crop_black_borders(image_array, threshold)
-        
-        # Convert back to PIL Image
-        from PIL import Image
-        return Image.fromarray(cropped_array)
+        return cropped_array
         
     except Exception as e:
-        print(f"Debug: Error cropping PIL image: {e}")
-        return pil_image 
+        print(f"Debug: Error cropping image: {e}")
+        return image_array 
 
 
 def get_demo_images() -> list:
@@ -777,17 +771,21 @@ def load_demo_image(filename: str):
         filename: Name of the demo image file
         
     Returns:
-        PIL Image object or None if file not found
+        numpy array (BGR format) or None if file not found
     """
     import os
-    from PIL import Image
+    import cv2
     
     demo_folder = "demo_images"
     image_path = os.path.join(demo_folder, filename)
     
     try:
         if os.path.exists(image_path):
-            return Image.open(image_path)
+            image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+            if image is None:
+                print(f"Failed to load image: {image_path}")
+                return None
+            return image
         else:
             print(f"Demo image not found: {image_path}")
             return None

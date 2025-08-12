@@ -247,14 +247,15 @@ class ImageProcessor:
 
 def save_temp_image(image, temp_path: str = TEMP_IMAGE_PATH) -> str:
     """
-    Save a PIL Image to a temporary file for inference.
+    Save an image array to a temporary file for inference.
     
     Args:
-        image: PIL Image object
+        image: numpy array (BGR format from cv2)
         temp_path: Path to save the temporary image
         
     Returns:
         Path to the saved temporary image
     """
-    image.save(temp_path)
+    import cv2
+    cv2.imwrite(temp_path, image)
     return temp_path 
