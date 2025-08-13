@@ -14,8 +14,7 @@ export async function POST(req: NextRequest) {
     flaskFormData.append("image", file);
 
     // Prefer env-configured internal URL for Railway; default to localhost for dev
-    const baseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL || "http://127.0.0.1:5328";
-
+    const baseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL;
     const flaskResponse = await fetch(`${baseUrl}/api/process-image`, {
       method: "POST",
       body: flaskFormData,

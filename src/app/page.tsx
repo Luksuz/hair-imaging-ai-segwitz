@@ -192,8 +192,9 @@ function HomeContent() {
       } else {
         throw new Error("No image to process");
       }
-      
-      const res = await fetch(`${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/api/roboflow`, { method: "POST", body: form });
+        
+      const flaskBaseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL;
+      const res = await fetch(`${flaskBaseUrl}/api/roboflow`, { method: "POST", body: form });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setResult(data);
