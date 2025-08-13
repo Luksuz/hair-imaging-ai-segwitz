@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, Suspense } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { extractDetectionsAndImageSize, type Detection } from "@/lib/workflow";
 import { computeApproxMinimalTriangle, shortestSideMidAndApex } from "@/lib/triangle";
@@ -20,12 +21,16 @@ function HomeContent() {
   const [analysisReport, setAnalysisReport] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
   const [showDetailedBreakdown, setShowDetailedBreakdown] = useState(false);
+  const [showDetectionsList, setShowDetectionsList] = useState(true);
+  const [detectionSortBy, setDetectionSortBy] = useState<'confidence' | 'class'>("confidence");
   const [expandedDetections, setExpandedDetections] = useState<string[]>([]);
   const [cropHistory, setCropHistory] = useState<string[]>([]);
   const [originalImageSrc, setOriginalImageSrc] = useState<string | null>(null);
   const [imageInfo, setImageInfo] = useState<{width: number, height: number, name: string} | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isOriginalExpanded, setIsOriginalExpanded] = useState(false);
+  const [isProcessedExpanded, setIsProcessedExpanded] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -193,8 +198,8 @@ function HomeContent() {
         throw new Error("No image to process");
       }
         
-      const flaskBaseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL;
-      const res = await fetch(`${flaskBaseUrl}/api/roboflow`, { method: "POST", body: form });
+      // Call Next.js proxy route so we don't depend on CORS/envs in the browser
+      const res = await fetch(`/api/roboflow`, { method: "POST", body: form });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setResult(data);
@@ -353,6 +358,63 @@ function HomeContent() {
   return (
       <main className="min-h-screen bg-black text-white relative overflow-hidden">
         <BackgroundElements />
+        {/* Image Lightboxes */}
+        <AnimatePresence>
+          {isOriginalExpanded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+              onClick={() => setIsOriginalExpanded(false)}
+            >
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+                src={previewSrc || ''}
+                alt="Original Expanded"
+                className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                onClick={() => setIsOriginalExpanded(false)}
+                className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full grid place-items-center"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+          {isProcessedExpanded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+              onClick={() => setIsProcessedExpanded(false)}
+            >
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+                src={processedImageSrc || previewSrc || ''}
+                alt="Processed Expanded"
+                className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                onClick={() => setIsProcessedExpanded(false)}
+                className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full grid place-items-center"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         {/* Back button for results page */}
         <button
@@ -408,26 +470,46 @@ function HomeContent() {
                 or review the processed image below.
               </p>
               
-{analysisReport ? (
-                <PDFDownloadLink
-                  document={<PDFReport analysisReport={analysisReport} imageInfo={result && (result as any).image_info} />}
-                  fileName={`hair_follicle_analysis_${new Date().toISOString().slice(0, 10)}.pdf`}
+              {analysisReport ? (
+                <button
+                  onClick={async () => {
+                    try {
+                      const payload = {
+                        detections: (result as any)?.detections || [],
+                        analysis_report: analysisReport,
+                        image_info: (result as any)?.image_info,
+                        generated_on: new Date().toISOString(),
+                        processed_image: processedImageSrc || (result as any)?.processed_image || previewSrc || null
+                      };
+                      // Call Next.js proxy which forwards to Flask
+                      const res = await fetch(`/api/generate-pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                      });
+                      if (!res.ok) throw new Error('PDF generation failed');
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `hair_follicle_analysis_${new Date().toISOString().slice(0, 10)}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      URL.revokeObjectURL(url);
+                    } catch (e) {
+                      console.error(e);
+                      alert('Failed to download PDF');
+                    }
+                  }}
                   className="inline-flex items-center gap-3 text-white font-bold py-2 px-8 rounded-4xl transition-colors w-fit"
                   style={{
                     background: 'linear-gradient(62.62deg, #FF4B4B -4.69%, #FF3E37 66.01%, #FFA9A9 105.86%)'
                   }}
                 >
-                  {({ blob, url, loading, error }) => {
-                    if (loading) return 'Generating PDF...';
-                    if (error) return 'Error generating PDF';
-                    return (
-                      <>
-                        Download PDF
-                        <span className="text-xl">↓</span>
-                      </>
-                    );
-                  }}
-                </PDFDownloadLink>
+                  Download PDF
+                  <span className="text-xl">↓</span>
+                </button>
               ) : (
                 <button
                   disabled
@@ -456,12 +538,12 @@ function HomeContent() {
                   </div>
                   <div className="relative bg-neutral-800 rounded-3xl overflow-hidden aspect-[4/5]">
                     {/* Expand/Close buttons */}
-                    <button className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
+                    <button onClick={() => setIsOriginalExpanded(true)} className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                       </svg>
                     </button>
-                    <button className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
+                    <button onClick={() => setShowDetectionsList((v) => !v)} title="Toggle detections list" className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -487,12 +569,12 @@ function HomeContent() {
                   </div>
                   <div className="relative bg-neutral-800 rounded-3xl overflow-hidden aspect-[4/5]">
                     {/* Expand/Close buttons */}
-                    <button className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
+                    <button onClick={() => setIsProcessedExpanded(true)} className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                       </svg>
                     </button>
-                    <button className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
+                    <button onClick={() => setIsProcessedExpanded(true)} className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -636,7 +718,12 @@ function HomeContent() {
 
             {/* Hair Count Charts */}
             {analysisReport && (
-              <div className="grid grid-cols-2 gap-8 mb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-2 gap-8 mb-12"
+              >
                 {/* Hair Count per cm² */}
                 <div className="bg-neutral-900 rounded-2xl p-6">
                   <div className="flex justify-between items-center mb-6">
@@ -766,14 +853,20 @@ function HomeContent() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Hair Follicle Count by Strength */}
             <h2 className="text-4xl font-bold mb-8 text-center">Hair Follicle Count by Strength</h2>
 
             {analysisReport && (
-              <div className="grid grid-cols-2 gap-12">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.35 }}
+                className="grid grid-cols-2 gap-12"
+              >
                 {/* Hair Count Distribution */}
                 <div className="bg-neutral-900 rounded-2xl p-8">
                   <div className="flex justify-between items-center mb-6">
@@ -987,7 +1080,7 @@ function HomeContent() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Detection Confidence Statistics */}
@@ -1193,12 +1286,52 @@ function HomeContent() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
+                      <div className="ml-auto flex items-center gap-2">
+                        <label className="text-sm text-neutral-400">Sort:</label>
+                        <select
+                          value={detectionSortBy}
+                          onChange={(e) => setDetectionSortBy(e.target.value as 'confidence' | 'class')}
+                          className="bg-neutral-800 text-white text-sm rounded-md px-2 py-1 border border-neutral-700"
+                        >
+                          <option value="confidence">Confidence</option>
+                          <option value="class">Class</option>
+                        </select>
+                        <button
+                          onClick={() => setShowDetectionsList((v) => !v)}
+                          className="px-2 py-1 text-sm bg-neutral-700 rounded-md hover:bg-neutral-600"
+                        >
+                          {showDetectionsList ? 'Hide list' : 'Show list'}
+                        </button>
+                      </div>
                     </div>
 
-                    {showDetailedBreakdown && (
-                      <div className="space-y-6">
-                        {(result as any).detections.slice(0, 5).map((detection: any, index: number) => (
-                        <div key={detection.id || index} className="border-b border-neutral-700 pb-6 last:border-b-0 last:pb-0">
+                    <AnimatePresence initial={false}>
+                    {showDetailedBreakdown && showDetectionsList && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="space-y-6 overflow-hidden"
+                      >
+                        {[...((result as any).detections || [])]
+                          .sort((a: any, b: any) => {
+                            if (detectionSortBy === 'confidence') {
+                              return (b.confidence || 0) - (a.confidence || 0);
+                            }
+                            const ac = (a.class || '').localeCompare(b.class || '');
+                            return ac;
+                          })
+                          .slice(0, 10)
+                          .map((detection: any, index: number) => (
+                        <motion.div
+                          key={detection.id || index}
+                          initial={{ opacity: 0, y: 10 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.2 }}
+                          transition={{ duration: 0.25 }}
+                          className="border-b border-neutral-700 pb-6 last:border-b-0 last:pb-0"
+                        >
                           <div className="flex justify-between items-start mb-3">
                             <h4 className="text-lg font-bold text-white">Detection {index + 1}:</h4>
                             <div className="flex items-center gap-2">
@@ -1257,7 +1390,7 @@ function HomeContent() {
                               >{((detection.confidence || 0) * 100).toFixed(1)}%</span>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                         {(result as any).detections.length > 5 && (
                           <div className="text-center pt-4">
@@ -1272,8 +1405,9 @@ function HomeContent() {
                             </button>
                           </div>
                         )}
-                      </div>
+                      </motion.div>
                     )}
+                    </AnimatePresence>
                   </div>
                 )}
               </div>

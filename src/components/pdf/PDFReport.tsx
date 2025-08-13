@@ -9,6 +9,7 @@ import { ChartsSection } from './ChartsSection';
 import { AnalysisSection } from './AnalysisSection';
 import { ConfidenceStats } from './ConfidenceStats';
 import { AnalysisSummary } from './AnalysisSummary';
+import { TopInfo } from './TopInfo';
 
 // Define styles using StyleSheet API
 const styles = StyleSheet.create({
@@ -56,6 +57,8 @@ export const PDFReport: React.FC<PDFReportProps> = ({ analysisReport, imageInfo 
   const successfulTriangles = reportData.triangleAnalysis.successful_triangles || 0;
   const successRate = reportData.triangleAnalysis.success_rate || 0;
   const avgConfidence = (reportData.confidenceStats.overall?.average || 0) * 100;
+  const imageWidth = imageInfo?.width || analysisReport?.image_info?.width;
+  const imageHeight = imageInfo?.height || analysisReport?.image_info?.height;
 
   // Determine dominant type
   const counts = {
@@ -80,6 +83,13 @@ export const PDFReport: React.FC<PDFReportProps> = ({ analysisReport, imageInfo 
         <ReportHeader 
           reportDate={reportData.reportDate}
           analysisId={reportData.analysisId}
+        />
+        <TopInfo 
+          reportDate={reportData.reportDate}
+          totalDetections={reportData.totalCount}
+          successRate={successRate}
+          imageWidth={imageWidth}
+          imageHeight={imageHeight}
         />
         
         <MainStats 

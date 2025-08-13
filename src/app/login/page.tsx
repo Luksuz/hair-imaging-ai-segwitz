@@ -23,7 +23,7 @@ export default function Login() {
     setError(null);
 
     // Fetch env variable for Flask base URL
-    const flaskBaseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL;
+    const flaskBaseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL || "";
     const res = await fetch(`${flaskBaseUrl}/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

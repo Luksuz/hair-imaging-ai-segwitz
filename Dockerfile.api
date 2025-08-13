@@ -2,9 +2,16 @@ FROM python:3.11-slim-bullseye
 
 WORKDIR /app
 
-# System deps for Pillow/libGL if needed
+# System deps for Pillow/libGL, WeasyPrint and wkhtmltopdf
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
+  && apt-get install -y --no-install-recommends \
+    libgl1 libglib2.0-0 \
+    libcairo2 \
+    libpango-1.0-0 libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libxrender1 libxext6 libx11-6 \
+    libfontconfig1 fonts-dejavu-core \
+    wkhtmltopdf \
   && rm -rf /var/lib/apt/lists/*
 
 COPY api/requirements.txt ./api/requirements.txt

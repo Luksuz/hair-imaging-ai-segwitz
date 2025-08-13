@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hair Follicle Segmentation & Analysis Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; margin: 0; background: #f3f4f6; }
+    .container { padding: 24px; max-width: 1024px; margin: 0 auto; }
+    .banner { background: linear-gradient(62.62deg, #FF4B4B -4.69%, #FF3E37 66.01%, #FFA9A9 105.86%); color: #fff; padding: 16px; border-radius: 10px; font-weight: 800; text-align: center; font-size: 20px; }
+    .surface { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); margin-top: 14px; }
+    .hero { display: flex; gap: 16px; align-items: center; }
+    .hero img { width: 150px; height: 150px; object-fit: cover; border-radius: 16px; border: 1px solid #e5e7eb; }
+    .hero-col { flex: 1; display: flex; gap: 24px; align-items: flex-start; }
+    .hero-card { flex: 1; }
+    .gauge { flex: 1; min-width: 0; }
+    .hero-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+    .gauge-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+    .gauge-value { font-size: 16px; font-weight: 900; color: #ef4444; margin-left: 4px; }
+    .gauge-wrap { display: flex; align-items: center; gap: 12px; }
+    .gauge-legend { height: 240px; width: 160px; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
+    .ticks { display: flex; flex-direction: column; gap: 48px; color: #4b5563; font-weight: 700; font-size: 12px; }
+    .bar { height: 25%; }
+    .bar-strong { background: linear-gradient(180deg, #41D590 0%, #079600 100%); }
+    .bar-medium { background: linear-gradient(180deg, #B7FFDD 0%, #6DA76A 100%); }
+    .bar-mid { background: linear-gradient(180deg, #FFB800 0%, #FF6A00 100%); }
+    .bar-weak { background: linear-gradient(180deg, #F06338 0%, #F06338 100%); }
+    .divider { width: 1.5px; background: #e5e7eb; border-radius: 2px; margin: 0 8px; }
+    .row { display: flex; gap: 12px; }
+    .col { flex: 1; }
+    .label { color: #6b7280; font-size: 12px; margin: 2px 0; }
+    .value { color: #0f172a; font-size: 13px; margin-bottom: 8px; font-weight: 600; }
+    .stats { display: flex; gap: 12px; margin-top: 12px; }
+    .stat { flex: 1; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+    .stat h4 { margin: 0 0 6px 0; font-size: 13px; color: #334155; font-weight: 700; }
+    .stat .num { font-weight: 800; font-size: 22px; color: #0f172a; }
+    .stat .ok { color: #16a34a; }
+    .section-title { font-size: 16px; margin: 18px 0 10px; font-weight: 800; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; }
+    th, td { border: 1px solid #e5e7eb; padding: 9px 10px; font-size: 12px; text-align: left; }
+    th { background: #f8fafc; color: #374151; }
+    .muted { color: #6b7280; }
+    .row-strong { background: #d1fae5; }
+    .row-medium { background: #fef3c7; }
+    .row-weak { background: #fee2e2; }
+    .page-break { page-break-before: always; }
+    .subtitle { font-weight: 800; margin: 8px 0 12px; }
+    .summary-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .summary-card { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+    .summary-card.half { flex: 0 0 calc(50% - 12px); }
+    .summary-card.third { flex: 0 0 calc(33.333% - 12px); }
+    .summary-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+    .summary-value { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .footer { font-size: 11px; color: #374151; margin-top: 16px; }
+  </style>
+  </head>
+<body>
+  <div class="container">
+    <div class="banner">Hair Follicle Segmentation & Analysis Report</div>
+
+    <div class="surface">
+      <div class="row">
+        <div class="col">
+          <div class="label">Report Date</div>
+          <div class="value">{{ generated_on }}</div>
+          <div class="label">Analysis Type</div>
+          <div class="value">Hair Follicle Segmentation & Triangle Detection</div>
+        </div>
+        <div class="col">
+          <div class="label">Image Resolution</div>
+          <div class="value">{{ image_info.width }} × {{ image_info.height }} pixels</div>
+          <div class="label">Image Size</div>
+          <div class="value">{{ image_info.width * image_info.height }} pixels</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <h4>Total Detections</h4>
+          <div class="num">{{ report.total_count }}</div>
+        </div>
+        <div class="stat">
+          <h4>Analysis Success Rate</h4>
+          <div class="num ok">{{ '%.1f' % (report.triangle_analysis.success_rate or 0) }}%</div>
+        </div>
+      </div>
+    </div>
+
+    {% if processed_image %}
+    <div class="surface hero">
+      <div class="hero-card" style="max-width: 200px;">
+        <div class="hero-title">Processed Image</div>
+        <img src="{{ processed_image }}" alt="Processed Image" />
+      </div>
+      <div class="hero-col">
+        <div class="gauge">
+          <div class="gauge-title">Hair Count per cm² <span class="gauge-value">{{ report.total_count or 0 }}</span></div>
+          <div class="gauge-wrap">
+            <div class="gauge-legend">
+              <div class="bar bar-strong"></div>
+              <div class="bar bar-medium"></div>
+              <div class="bar bar-mid"></div>
+              <div class="bar bar-weak"></div>
+            </div>
+            <div class="ticks">
+              <div>120</div>
+              <div>5</div>
+              <div>5</div>
+              <div>1</div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="gauge">
+          <div class="gauge-title">Sum of Hair Width per cm² <span class="gauge-value">{{ (report.total_width or 10082) }} μm</span></div>
+          <div class="gauge-wrap">
+            <div class="gauge-legend">
+              <div class="bar bar-strong"></div>
+              <div class="bar bar-medium"></div>
+              <div class="bar bar-mid"></div>
+              <div class="bar bar-weak"></div>
+            </div>
+            <div class="ticks">
+              <div>120</div>
+              <div>5</div>
+              <div>5</div>
+              <div>1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="section-title">Hair Follicle Count Summary</div>
+    <div class="surface">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Count</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-strong"><td>Strong Hair Follicles</td><td>{{ report.class_counts.strong }}</td><td>{{ '%.1f' % (report.class_percentages.strong or 0) }}%</td></tr>
+        <tr class="row-medium"><td>Medium Hair Follicles</td><td>{{ report.class_counts.medium }}</td><td>{{ '%.1f' % (report.class_percentages.medium or 0) }}%</td></tr>
+        <tr class="row-weak"><td>Weak Hair Follicles</td><td>{{ report.class_counts.weak }}</td><td>{{ '%.1f' % (report.class_percentages.weak or 0) }}%</td></tr>
+        <tr><th>TOTAL</th><th>{{ report.total_count }}</th><th>100.0%</th></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="section-title">Analysis Metrics</div>
+    <div class="surface">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Terminal-Vellus Ratio</td>
+            <td>{{ report.ratios.terminal_vellus or 'N/A' }}</td>
+            <td class="muted">Strong:Weak hair follicle ratio</td>
+          </tr>
+          <tr>
+            <td>Strong-Medium Ratio</td>
+            <td>{{ report.ratios.strong_medium or 'N/A' }}</td>
+            <td class="muted">Strong:Medium hair follicle ratio</td>
+          </tr>
+          <tr>
+            <td>Triangle Success Rate</td>
+            <td>{{ '%.1f' % (report.triangle_analysis.success_rate or 0) }}%</td>
+            <td class="muted">Successful directional analyses</td>
+          </tr>
+          <tr>
+            <td>Strong Follicle %</td>
+            <td>{{ '%.1f' % (report.class_percentages.strong or 0) }}%</td>
+            <td class="muted">Percentage of strong follicles</td>
+          </tr>
+          <tr>
+            <td>Medium Follicle %</td>
+            <td>{{ '%.1f' % (report.class_percentages.medium or 0) }}%</td>
+            <td class="muted">Percentage of medium follicles</td>
+          </tr>
+          <tr>
+            <td>Weak Follicle %</td>
+            <td>{{ '%.1f' % (report.class_percentages.weak or 0) }}%</td>
+            <td class="muted">Percentage of weak follicles</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Detection Confidence Statistics</div>
+    <div class="surface">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Count</th>
+            <th>Average Confidence</th>
+            <th>Min Confidence</th>
+            <th>Max Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Strong</td>
+            <td>{{ report.confidence_stats.strong.count or 0 }}</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.strong.average or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.strong.min or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.strong.max or 0) * 100) }}%</td>
+          </tr>
+          <tr>
+            <td>Medium</td>
+            <td>{{ report.confidence_stats.medium.count or 0 }}</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.medium.average or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.medium.min or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.medium.max or 0) * 100) }}%</td>
+          </tr>
+          <tr>
+            <td>Weak</td>
+            <td>{{ report.confidence_stats.weak.count or 0 }}</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.weak.average or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.weak.min or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.weak.max or 0) * 100) }}%</td>
+          </tr>
+          <tr>
+            <td>Overall</td>
+            <td>{{ report.total_count or 0 }}</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.overall.average or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.overall.min or 0) * 100) }}%</td>
+            <td>{{ '%.1f' % ((report.confidence_stats.overall.max or 0) * 100) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="section-title">Analysis Summary</div>
+    <div class="surface">
+      <div class="subtitle">Clinical Findings:</div>
+      {% set sc = report.class_counts.strong or 0 %}
+      {% set mc = report.class_counts.medium or 0 %}
+      {% set wc = report.class_counts.weak or 0 %}
+      {% set sp = report.class_percentages.strong or 0 %}
+      {% set mp = report.class_percentages.medium or 0 %}
+      {% set wp = report.class_percentages.weak or 0 %}
+      {% set dominant_label = 'Strong' %}
+      {% set dominant_count = sc %}
+      {% set dominant_pct = sp %}
+      {% if mc > dominant_count %}
+        {% set dominant_label = 'Medium' %}
+        {% set dominant_count = mc %}
+        {% set dominant_pct = mp %}
+      {% endif %}
+      {% if wc > dominant_count %}
+        {% set dominant_label = 'Weak' %}
+        {% set dominant_count = wc %}
+        {% set dominant_pct = wp %}
+      {% endif %}
+      <div class="summary-grid">
+        <div class="summary-card half">
+          <div class="summary-label">Total hair follicles detected</div>
+          <div class="summary-value">{{ report.total_count }}</div>
+        </div>
+        <div class="summary-card half">
+          <div class="summary-label">Successful directional analyses</div>
+          <div class="summary-value">{{ report.triangle_analysis.successful_triangles or 0 }} ({{ '%.1f' % (report.triangle_analysis.success_rate or 0) }}%)</div>
+        </div>
+        <div class="summary-card third">
+          <div class="summary-label">Dominant hair follicle type</div>
+          <div class="summary-value">{{ dominant_label }} ({{ dominant_count }} follicles, {{ '%.1f' % dominant_pct }}%)</div>
+        </div>
+        <div class="summary-card third">
+          <div class="summary-label">Terminal–Vellus ratio</div>
+          <div class="summary-value">{{ report.ratios.terminal_vellus or 'N/A' }}</div>
+        </div>
+        <div class="summary-card third">
+          <div class="summary-label">Average detection confidence</div>
+          <div class="summary-value">{{ '%.1f' % (((report.confidence_stats.overall or {}).average or 0) * 100) }}%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="surface">
+      <div class="subtitle">Interpretation</div>
+      <div class="muted" style="font-size: 12px; line-height: 1.5;">
+        This analysis provides a quantitative assessment of hair follicle distribution and strength classification. 
+        The color-coded directional arrows in the processed image indicate hair follicle orientation and strength, 
+        with green representing strong follicles, yellow for medium strength, and red for weak follicles.
+      </div>
+    </div>
+
+    <div class="footer">
+      Report generated by Hair Follicle Segmentation & Triangle Detection System<br/>
+      Generated on: {{ generated_on }}<br/>
+      Analysis Method: Roboflow Workflow + OpenCV Triangle Detection
+    </div>
+  </div>
+</body>
+</html>
+
+

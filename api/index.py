@@ -8,7 +8,7 @@ Integrates all functionality from the Streamlit app including:
 - Authentication
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response, render_template
 from flask_cors import CORS
 import logging
 import os
@@ -16,7 +16,7 @@ import sys
 import base64
 import io
 from PIL import Image
-# Removed weasyprint and jinja2 imports - now using React PDF on frontend
+from weasyprint import HTML
 
 # Add the current directory to Python path to import our modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +55,7 @@ logger.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 # Enable permissive CORS for all routes and origins
-CORS(app, resources={r"/*": {"origins": "*"}})
+#CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Enable Flask's debug mode for more verbose logging
 app.config['DEBUG'] = True
@@ -286,7 +286,32 @@ def process_image():
         }), 500
 
 
-# PDF generation now handled on frontend using React PDF components
+@app.route("/api/generate-pdf", methods=['POST'])
+def generate_pdf():
+    """Generate PDF report from HTML template based on detections and report data."""
+    try:
+        payload = request.get_json() or {}
+        detections = payload.get('detections', [])
+        report = payload.get('analysis_report') or payload.get('report') or {}
+        image_info = payload.get('image_info') or {}
+
+        html = render_template(
+            'report_template.html',
+            generated_on=payload.get('generated_on') or payload.get('report_date') or '',
+            detections=detections,
+            report=report,
+            image_info=image_info,
+            processed_image=payload.get('processed_image'),
+        )
+
+        pdf_bytes = HTML(string=html).write_pdf()
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = 'attachment; filename=hair_follicle_report.pdf'
+        return response
+    except Exception as e:
+        logger.error(f"Error in generate_pdf: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route("/api/config", methods=['GET'])

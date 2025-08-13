@@ -1,14 +1,28 @@
 import React from 'react';
-import { Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Text, View, StyleSheet, Svg, Defs, LinearGradient, Stop, Rect } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomStyle: 'solid',
-    borderBottomColor: '#ddd',
+  headerBanner: {
+    position: 'relative',
+    height: 36,
+    borderRadius: 8,
+    marginBottom: 14,
+  },
+  headerText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    right: 0,
+  },
+  gradientSvg: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: '100%'
   },
   logo: {
     width: 50,
@@ -38,18 +52,18 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   reportTitle: {
-    textAlign: 'center',
-    marginVertical: 20,
+    textAlign: 'left',
+    marginBottom: 10,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a3c5e',
-    marginBottom: 5,
+    color: '#111827',
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 10,
+    color: '#6B7280',
   },
 });
 
@@ -61,21 +75,24 @@ interface ReportHeaderProps {
 export const ReportHeader: React.FC<ReportHeaderProps> = ({ reportDate, analysisId }) => {
   return (
     <>
-      <View style={styles.header}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>HF</Text>
-        </View>
-        <View style={styles.companyInfo}>
-          <Text style={styles.companyName}>Hair Follicle Analysis System</Text>
-          <Text style={styles.companySubtitle}>Advanced Trichoscopy & AI-Powered Detection</Text>
-          <Text style={styles.companySubtitle}>Generated on: {reportDate}</Text>
-          <Text style={styles.companySubtitle}>Analysis ID: {analysisId}</Text>
-        </View>
+      <View style={styles.headerBanner}>
+        {/* Gradient background via SVG to match requested style */}
+        <Svg style={styles.gradientSvg} height={36}>
+          <Defs>
+            {/* Standard left-to-right linear gradient */}
+            <LinearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <Stop offset="0%" stopColor="#FF4B4B" />
+              <Stop offset="100%" stopColor="#FF3E37" />
+            </LinearGradient>
+          </Defs>
+          <Rect x={0} y={0} width="100%" height="100%" fill="url(#headerGradient)" />
+        </Svg>
+        <Text style={styles.headerText}>Hair Follicle Segmentation & Analysis Report</Text>
       </View>
       
       <View style={styles.reportTitle}>
-        <Text style={styles.title}>Hair Follicle Analysis Report</Text>
-        <Text style={styles.subtitle}>Comprehensive Follicle Detection & Directional Analysis</Text>
+        <Text style={styles.title}>Report Details</Text>
+        <Text style={styles.subtitle}>Generated on: {reportDate} · Analysis ID: {analysisId}</Text>
       </View>
     </>
   );
