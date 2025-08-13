@@ -193,7 +193,7 @@ function HomeContent() {
         throw new Error("No image to process");
       }
       
-      const res = await fetch("/api/roboflow", { method: "POST", body: form });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/api/roboflow`, { method: "POST", body: form });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setResult(data);
