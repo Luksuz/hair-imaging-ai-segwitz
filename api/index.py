@@ -9,6 +9,7 @@ Integrates all functionality from the Streamlit app including:
 """
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import logging
 import os
 import sys
@@ -53,6 +54,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
+# Enable permissive CORS for all routes and origins
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Enable Flask's debug mode for more verbose logging
 app.config['DEBUG'] = True

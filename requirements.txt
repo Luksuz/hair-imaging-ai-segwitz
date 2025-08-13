@@ -1,3 +1,4 @@
-Flask==3.0.3
+Flask=
+Flask-CORS
 opencv-python-headless
 pillow
