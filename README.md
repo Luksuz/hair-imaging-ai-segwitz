@@ -16,6 +16,24 @@ bun dev
 
 Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
 
+### Docker (split services)
+
+Build and run API:
+
+```bash
+docker build -f Dockerfile.api -t hair-api:latest .
+docker run -d --name hair-api -p 5328:5328 hair-api:latest
+```
+
+Build and run Web (pointing to API):
+
+```bash
+docker build -f Dockerfile.web -t hair-web:latest .
+docker run -d --name hair-web -p 8080:8080 -e NEXT_PUBLIC_FLASK_BASE_URL=http://127.0.0.1:5328 hair-web:latest
+```
+
+On Railway, set `NEXT_PUBLIC_FLASK_BASE_URL` to your API's private URL, e.g. `http://hair-imaging-ai-segwitz.railway.internal:5328`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -1,0 +1,21 @@
+FROM python:3.11-slim-bullseye
+
+WORKDIR /app
+
+# System deps for Pillow/libGL if needed
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY api/requirements.txt ./api/requirements.txt
+RUN pip install --no-cache-dir -r api/requirements.txt
+
+COPY api ./api
+
+ENV PYTHONUNBUFFERED=1
+EXPOSE 5328
+
+CMD ["python", "api/index.py"]
+
+
+
