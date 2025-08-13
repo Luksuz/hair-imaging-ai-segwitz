@@ -30,7 +30,8 @@ export default function Login() {
       body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
-    if (data.ok) {
+    console.log(data);
+    if (data.success) {
       // Save auth token to localStorage
       localStorage.setItem('hair_follicle_auth', 'authenticated');
       router.push("/");
