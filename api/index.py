@@ -55,7 +55,7 @@ logger.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 # Enable permissive CORS for all routes and origins
-#CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Enable Flask's debug mode for more verbose logging
 app.config['DEBUG'] = True
