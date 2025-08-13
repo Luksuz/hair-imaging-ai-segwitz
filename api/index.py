@@ -202,9 +202,19 @@ def process_image():
             if 'error' in report:
                 return jsonify({'error': f'Error generating report: {report["error"]}'}), 500
             
-            # Convert processed image to base64 for JSON response
-            # processed_image is now a PIL Image object
-            processed_image_pil = processed_image if hasattr(processed_image, 'save') else cropped_image
+            # Convert processed image (OpenCV BGR ndarray) to PIL for JSON response
+            processed_image_pil = None
+            try:
+                import numpy as _np
+                if isinstance(processed_image, _np.ndarray):
+                    rgb_img = convert_bgr_to_rgb(processed_image)
+                    processed_image_pil = Image.fromarray(rgb_img)
+                elif hasattr(processed_image, 'save'):
+                    processed_image_pil = processed_image
+                else:
+                    processed_image_pil = cropped_image
+            except Exception:
+                processed_image_pil = cropped_image
             buffered = io.BytesIO()
             processed_image_pil.save(buffered, format="PNG")
             processed_image_b64 = base64.b64encode(buffered.getvalue()).decode()
