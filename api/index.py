@@ -305,13 +305,32 @@ def generate_pdf():
         report = payload.get('analysis_report') or payload.get('report') or {}
         image_info = payload.get('image_info') or {}
 
+        # Downscale processed image (if provided) to reduce PDF size
+        processed_image_data_url = payload.get('processed_image')
+        try:
+            if processed_image_data_url:
+                b64_part = processed_image_data_url
+                if processed_image_data_url.startswith('data:image'):
+                    b64_part = processed_image_data_url.split(',')[1]
+                img_bytes = base64.b64decode(b64_part)
+                with Image.open(io.BytesIO(img_bytes)) as im:
+                    im = im.convert('RGB')
+                    new_w = max(1, im.width // 10)
+                    new_h = max(1, im.height // 10)
+                    im_small = im.resize((new_w, new_h), Image.LANCZOS)
+                    out = io.BytesIO()
+                    im_small.save(out, format='PNG', optimize=True)
+                    processed_image_data_url = 'data:image/png;base64,' + base64.b64encode(out.getvalue()).decode()
+        except Exception as _e:
+            logger.warning(f"PDF image downscale failed, embedding original image. Error: {_e}")
+
         html = render_template(
             'report_template.html',
             generated_on=payload.get('generated_on') or payload.get('report_date') or '',
             detections=detections,
             report=report,
             image_info=image_info,
-            processed_image=payload.get('processed_image'),
+            processed_image=processed_image_data_url,
         )
 
         pdf_bytes = HTML(string=html).write_pdf()

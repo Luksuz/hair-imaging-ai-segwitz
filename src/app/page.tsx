@@ -31,6 +31,7 @@ function HomeContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isOriginalExpanded, setIsOriginalExpanded] = useState(false);
   const [isProcessedExpanded, setIsProcessedExpanded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -337,7 +338,7 @@ function HomeContent() {
 
   // Show loading while checking authentication
   if (isCheckingAuth) {
-    return (
+  return (
       <main className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center">
         <BackgroundElements />
         <div className="text-center relative z-10">
@@ -379,12 +380,6 @@ function HomeContent() {
                 className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               />
-              <button
-                onClick={() => setIsOriginalExpanded(false)}
-                className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full grid place-items-center"
-              >
-                ✕
-              </button>
             </motion.div>
           )}
           {isProcessedExpanded && (
@@ -406,12 +401,6 @@ function HomeContent() {
                 className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               />
-              <button
-                onClick={() => setIsProcessedExpanded(false)}
-                className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full grid place-items-center"
-              >
-                ✕
-              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -474,6 +463,7 @@ function HomeContent() {
                 <button
                   onClick={async () => {
                     try {
+                      setIsDownloading(true);
                       const payload = {
                         detections: (result as any)?.detections || [],
                         analysis_report: analysisReport,
@@ -500,15 +490,18 @@ function HomeContent() {
                     } catch (e) {
                       console.error(e);
                       alert('Failed to download PDF');
+                    } finally {
+                      setIsDownloading(false);
                     }
                   }}
-                  className="inline-flex items-center gap-3 text-white font-bold py-2 px-8 rounded-4xl transition-colors w-fit"
+                  disabled={isDownloading}
+                  className="inline-flex items-center gap-3 text-white font-bold py-2 px-8 rounded-4xl transition-colors w-fit disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
                     background: 'linear-gradient(62.62deg, #FF4B4B -4.69%, #FF3E37 66.01%, #FFA9A9 105.86%)'
                   }}
                 >
-                  Download PDF
-                  <span className="text-xl">↓</span>
+                  {isDownloading ? 'Downloading...' : 'Download PDF'}
+                  {!isDownloading && <span className="text-xl">↓</span>}
                 </button>
               ) : (
                 <button
@@ -537,17 +530,6 @@ function HomeContent() {
                     Uploaded Image
                   </div>
                   <div className="relative bg-neutral-800 rounded-3xl overflow-hidden aspect-[4/5]">
-                    {/* Expand/Close buttons */}
-                    <button onClick={() => setIsOriginalExpanded(true)} className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                      </svg>
-                    </button>
-                    <button onClick={() => setShowDetectionsList((v) => !v)} title="Toggle detections list" className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                     <img
                       src={previewSrc || ''}
                       alt="Original"
@@ -568,17 +550,6 @@ function HomeContent() {
                     Processed Image
                   </div>
                   <div className="relative bg-neutral-800 rounded-3xl overflow-hidden aspect-[4/5]">
-                    {/* Expand/Close buttons */}
-                    <button onClick={() => setIsProcessedExpanded(true)} className="absolute top-4 left-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                      </svg>
-                    </button>
-                    <button onClick={() => setIsProcessedExpanded(true)} className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                     <img
                       src={processedImageSrc || previewSrc || ''}
                       alt="Processed"
@@ -617,7 +588,7 @@ function HomeContent() {
                     }}
                   >
                     {analysisReport.total_count}
-                  </div>
+        </div>
                 </div>
 
                 {/* Successful Triangles */}
@@ -877,18 +848,7 @@ function HomeContent() {
                       WebkitTextFillColor: 'transparent'
                     }}
                   >Hair Count Distribution</h3>
-                    <div className="flex gap-2">
-                      <button className="w-8 h-8 bg-neutral-700 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                      </button>
-                      <button className="w-8 h-8 bg-neutral-700 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                      </button>
-                    </div>
+                    <div className="flex gap-2"></div>
                   </div>
 
                   <div className="space-y-6">
@@ -1001,18 +961,7 @@ function HomeContent() {
                       WebkitTextFillColor: 'transparent'
                     }}
                   >Analysis Metrics</h3>
-                    <div className="flex gap-2">
-                      <button className="w-8 h-8 bg-neutral-700 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                      </button>
-                      <button className="w-8 h-8 bg-neutral-700 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                      </button>
-                    </div>
+                    <div className="flex gap-2"></div>
                   </div>
 
                   <div className="space-y-4">
@@ -1627,7 +1576,7 @@ function HomeContent() {
               >
                 🖼️ Choose Demo Image
               </a>
-            </div>
+    </div>
           </section>
         </div>
     </div>
