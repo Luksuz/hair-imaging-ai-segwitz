@@ -1,71 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Hair Follicle Segmentation & Analysis (Next.js + Flask)
 
-## Local with Docker Compose
+AI-powered hair follicle segmentation and directional analysis with a modern Next.js frontend, a Flask API backend, and server-side PDF report generation.
 
-1. Create a `.env` file from the example:
-   cp .env.example .env
-   # Edit values as needed (API keys, thresholds)
+### Features
 
-2. Start both services:
-   docker compose up --build
+- Robust image processing pipeline (auto-crop, segmentation via Roboflow, triangle detection, directional arrows)
+- Pure-Python/Pillow image handling (no OpenCV/Numpy in runtime)
+- Professional PDF reports generated server-side (WeasyPrint/wkhtmltopdf)
+- Polished dark UI with gradients, animations, and responsive layout
+- Authentication (simple username/password) with client-side session
+- Dockerized for local (docker-compose) and Railway deployment
 
-The web app will be on http://localhost:8080 and will call Flask at http://api:5328 via the internal network.
+### Architecture
 
-## Railway (two separate services)
+- Web: Next.js (TypeScript, App Router) — UI, auth, API proxy routes
+- API: Flask — image processing, analysis, and HTML-to-PDF
+- Inference: Roboflow Workflows (remote)
+- Images: processed with Pillow; geometry in pure Python
 
-- Build and deploy `Dockerfile.web` and `Dockerfile.api` as two services.
-- Set environment variables from the Railway dashboard on each service.
-- For the web service, set `NEXT_PUBLIC_FLASK_BASE_URL` to the API’s private URL, e.g. `http://<api-service>.railway.internal:5328`.
+---
 
-## Getting Started
+## Quick Start (Docker Compose)
 
-First, run the development server:
+1) Create a `.env` file in `hair-follicle-web/` with values like:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```env
+# Roboflow / analysis config
+ROBOFLOW_API_KEY=YOUR_API_KEY
+ROBOFLOW_WORKSPACE=ranaudio
+ROBOFLOW_WORKFLOW_ID=small-object-detection-sahi-5
+CONFIDENCE_THRESHOLD=0.3
+USE_CACHE=False
+BLACK_BORDER_THRESHOLD=10
+
+# Next.js runtime
+PORT=8080
+
+# Next.js -> Flask internal URL (compose network)
+FLASK_INTERNAL_URL=http://api:5328
+NEXT_PUBLIC_FLASK_BASE_URL=http://api:5328
 ```
 
-Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
-
-### Docker (split services)
-
-Build and run API:
+2) Start both services:
 
 ```bash
-docker build -f Dockerfile.api -t hair-api:latest .
-docker run -d --name hair-api -p 5328:5328 hair-api:latest
+docker compose up --build
 ```
 
-Build and run Web (pointing to API):
+Web: http://localhost:8080
+
+The web service talks to the API via the internal hostname `api:5328` (no CORS).
+
+---
+
+## Railway Deployment (two separate services)
+
+Deploy `Dockerfile.web` and `Dockerfile.api` as two services.
+
+- Set all environment variables from the Railway dashboard
+- On the web service, set `NEXT_PUBLIC_FLASK_BASE_URL` to the API’s private URL, e.g. `http://<api-service>.railway.internal:5328`
+- The web service’s Next.js API routes proxy requests to the Flask API, so the browser never hits Flask directly (avoids CORS)
+
+---
+
+## Local Development (without Docker)
+
+Backend (Flask):
 
 ```bash
-docker build -f Dockerfile.web -t hair-web:latest .
-docker run -d --name hair-web -p 8080:8080 -e NEXT_PUBLIC_FLASK_BASE_URL=http://127.0.0.1:5328 hair-web:latest
+cd hair-follicle-web
+pip install -r api/requirements.txt
+python api/index.py  # runs on http://127.0.0.1:5328
 ```
 
-On Railway, set `NEXT_PUBLIC_FLASK_BASE_URL` to your API's private URL, e.g. `http://hair-imaging-ai-segwitz.railway.internal:5328`.
+Frontend (Next.js):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd hair-follicle-web
+npm install
+NEXT_PUBLIC_FLASK_BASE_URL=http://127.0.0.1:5328 npm run dev
+# then open http://localhost:3000 (or 8080 if you configure PORT)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Shared (API processing):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `ROBOFLOW_API_KEY` — Roboflow API key
+- `ROBOFLOW_WORKSPACE` — Roboflow workspace
+- `ROBOFLOW_WORKFLOW_ID` — Workflow ID
+- `CONFIDENCE_THRESHOLD` — detection threshold (e.g., 0.3)
+- `USE_CACHE` — "True"/"False"
+- `BLACK_BORDER_THRESHOLD` — auto-crop sensitivity (e.g., 10)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Web:
 
-## Deploy on Vercel
+- `PORT` — Next.js port (default 8080 in container)
+- `FLASK_INTERNAL_URL` — Internal URL for server-side Next.js API routes (compose: `http://api:5328`)
+- `NEXT_PUBLIC_FLASK_BASE_URL` — Public/base URL used by server routes and any client fallbacks (Railway: API private URL)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Endpoints (Flask)
+
+- `GET /api/health` — health check
+- `POST /api/auth` — body `{ username, password }`; response `{ success: boolean }`
+- `POST /api/process-image` — multipart form with `image`; response includes `processed_image` (base64) and analysis data
+- `POST /api/generate-pdf` — JSON `{ detections, analysis_report, image_info, processed_image }`; returns PDF bytes
+
+## Next.js API Routes (Proxy)
+
+- `POST /api/auth` — proxies to Flask `/api/auth`, responds with `{ ok, success }`
+- `POST /api/roboflow` — proxies image uploads to Flask `/api/process-image`
+- `POST /api/generate-pdf` — proxies to Flask `/api/generate-pdf` and streams PDF back
+
+---
+
+## Authentication
+
+- Client stores a simple token in `localStorage` (`hair_follicle_auth`); pages gate on its presence
+- Flask validates credentials in `/api/auth` (default creds can be updated in `api/index.py`)
+- UI provides login with password visibility toggle
+
+---
+
+## Scripts
+
+```bash
+npm run dev      # Next.js dev server
+npm run build    # Build Next.js app
+npm run start    # Start Next.js (production)
+```
+
+---
+
+## Troubleshooting
+
+- CORS errors: ensure the browser calls Next.js API routes, not Flask directly. In compose, web uses `FLASK_INTERNAL_URL=http://api:5328`.
+- Missing PDF system libs: the API container includes WeasyPrint/wkhtmltopdf deps. Use the provided `Dockerfile.api`.
+- Env not applied: with compose, ensure `.env` exists and values are correct; we use `env_file` for both services.
+- Login fails: confirm `/api/auth` returns `{ success: true }` for your credentials and that the web route returns `{ ok: true, success: true }`.
+
