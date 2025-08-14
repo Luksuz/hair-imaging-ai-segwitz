@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   try {
     const payload = await req.json();
-    const baseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL || "http://127.0.0.1:5328";
+    const baseUrl = process.env.FLASK_INTERNAL_URL || process.env.NEXT_PUBLIC_FLASK_BASE_URL || "http://127.0.0.1:5328";
     const r = await fetch(`${baseUrl}/api/generate-pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

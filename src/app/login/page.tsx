@@ -22,16 +22,15 @@ export default function Login() {
     e.preventDefault();
     setError(null);
 
-    // Fetch env variable for Flask base URL
-    const flaskBaseUrl = process.env.NEXT_PUBLIC_FLASK_BASE_URL || "";
-    const res = await fetch(`${flaskBaseUrl}/api/auth`, {
+    // Call Next.js proxy route to avoid CORS and use internal Docker networking
+    const res = await fetch(`/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
     console.log(data);
-    if (data.success) {
+    if (data.success || data.ok) {
       // Save auth token to localStorage
       localStorage.setItem('hair_follicle_auth', 'authenticated');
       router.push("/");

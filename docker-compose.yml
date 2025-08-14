@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: hair-follicle-api
+    expose:
+      - "5328"
+    env_file:
+      - ./.env
+    networks:
+      - internal
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        # Ensure Next.js gets the internal URL at build time, too
+        NEXT_PUBLIC_FLASK_BASE_URL: http://api:5328
+    container_name: hair-follicle-web
+    environment:
+      - PORT=8080
+      - FLASK_INTERNAL_URL=http://api:5328
+      - NEXT_PUBLIC_FLASK_BASE_URL=http://api:5328
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+

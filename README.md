@@ -1,5 +1,22 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Local with Docker Compose
+
+1. Create a `.env` file from the example:
+   cp .env.example .env
+   # Edit values as needed (API keys, thresholds)
+
+2. Start both services:
+   docker compose up --build
+
+The web app will be on http://localhost:8080 and will call Flask at http://api:5328 via the internal network.
+
+## Railway (two separate services)
+
+- Build and deploy `Dockerfile.web` and `Dockerfile.api` as two services.
+- Set environment variables from the Railway dashboard on each service.
+- For the web service, set `NEXT_PUBLIC_FLASK_BASE_URL` to the API’s private URL, e.g. `http://<api-service>.railway.internal:5328`.
+
 ## Getting Started
 
 First, run the development server:

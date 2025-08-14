@@ -19,16 +19,8 @@ RUN pip install --no-cache-dir -r api/requirements.txt
 
 COPY api ./api
 
-# Env vars for runtime
-ENV PYTHONUNBUFFERED=1 \
-    ROBOFLOW_API_KEY="1SxAyEbpaNdwrNSbmDon" \
-    ROBOFLOW_WORKSPACE="ranaudio" \
-    ROBOFLOW_WORKFLOW_ID="small-object-detection-sahi-5" \
-    CONFIDENCE_THRESHOLD="0.3" \
-    USE_CACHE="False" \
-    BLACK_BORDER_THRESHOLD="10" \
-    NEXT_PUBLIC_FLASK_BASE_URL="https://remarkable-magic-production-2665.up.railway.app" \
-    RAILWAY_DOCKERFILE_PATH="Dockerfile.web"
+# Minimal env; prefer passing config via docker-compose environment/env_file
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5328
 
