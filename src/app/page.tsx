@@ -356,7 +356,7 @@ function HomeContent() {
   // Show results view
   if (showResults) {
   return (
-      <main className="min-h-screen bg-black text-white relative overflow-hidden">
+      <main className="min-h-screen bg-black text-white relative overflow-hidden pt-24">
         <BackgroundElements />
         {/* Image Lightboxes */}
         <AnimatePresence>
@@ -1437,7 +1437,7 @@ function HomeContent() {
   // Show fullscreen upload view when image is selected
   if (previewSrc && !showResults) {
     return (
-      <main className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center">
+      <main className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center pt-24">
         <BackgroundElements />
         
         {/* Back button positioned at top left */}
@@ -1565,7 +1565,7 @@ function HomeContent() {
 
   // Show initial upload view
   return (
-    <main className="min-h-screen py-10 bg-black text-white relative overflow-hidden">
+    <main className="min-h-screen pt-24 pb-10 bg-black text-white relative overflow-hidden">
       <BackgroundElements />
       
       {/* Logout button for main upload page */}
