@@ -6,3 +6,5 @@ opencv-python-headless
 numpy
 python-dotenv
 weasyprint
+ultralytics
+onnxruntime
