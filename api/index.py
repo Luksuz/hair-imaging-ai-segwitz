@@ -14,6 +14,9 @@ import logging
 import os
 import sys
 import base64
+import subprocess
+import time
+import re
 import io
 from PIL import Image
 from weasyprint import HTML
@@ -425,6 +428,225 @@ def legacy_triangle_processing():
         'error': 'This endpoint has been deprecated. Please use /api/process-image instead.',
         'new_endpoint': '/api/process-image'
     }), 410
+
+
+@app.route("/api/benchmark", methods=["POST"])
+def run_yolo_benchmark():
+    """Run Ultralytics YOLO benchmark for one or more models and return performance output.
+
+    Request JSON:
+      {
+        "models": ["yolo11n-seg.pt", "yolo11s-seg.pt", ...],
+        "imgsz": 640,
+        "device": "cpu"
+      }
+    """
+    try:
+        payload = request.get_json(silent=True) or {}
+        models = payload.get("models") or [
+            "yolo11n-seg.pt",
+            "yolo11s-seg.pt",
+            "yolo11m-seg.pt",
+            "yolo11l-seg.pt",
+            "yolo11x-seg.pt",
+        ]
+        imgsz = int(payload.get("imgsz", 640))
+        device = str(payload.get("device", "cpu"))
+        use_cache = bool(payload.get("use_cache", True))
+        check_only = bool(payload.get("check_only", False))
+
+        if not isinstance(models, list) or not models:
+            return jsonify({"success": False, "error": "'models' must be a non-empty array"}), 400
+
+        # Ensure cache directory exists
+        cache_dir = os.path.join(os.getcwd(), "benchmarks")
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+        except Exception:
+            pass
+
+        def sanitize_filename(name: str) -> str:
+            return re.sub(r"[^a-zA-Z0-9_.-]", "_", name)
+
+        def parse_yolo_table(raw_text: str):
+            """Parse YOLO CLI benchmark text to structured rows."""
+            if not raw_text:
+                return []
+            # drop ANSI
+            text = re.sub(r"\x1b\[[0-9;]*m", "", raw_text)
+            lines = text.splitlines()
+            # find header
+            header_idx = -1
+            for i, line in enumerate(lines):
+                if "Format" in line and "Inference time" in line and "FPS" in line:
+                    header_idx = i
+                    break
+            if header_idx == -1:
+                return []
+            rows = []
+            for line in lines[header_idx + 1:]:
+                s = line.strip()
+                if not s:
+                    continue
+                if s.startswith("💡") or s.lower().startswith("learn more"):
+                    break
+                if not re.match(r"^\d+\s+", s):
+                    continue
+                s = re.sub(r"^\d+\s+", "", s)
+                cols = re.split(r"\s{2,}", s)
+                if len(cols) < 6:
+                    continue
+                fmt, status, size_str, map_str, inf_str, fps_str = [c.strip() for c in cols[:6]]
+                def to_num(v):
+                    v = v.strip()
+                    if v in ("-", ""):
+                        return None
+                    try:
+                        return float(re.sub(r"[^0-9.\-]", "", v))
+                    except Exception:
+                        return None
+                rows.append({
+                    "format": fmt,
+                    "status": status,
+                    "sizeMB": to_num(size_str),
+                    "map": to_num(map_str),
+                    "inferenceMs": to_num(inf_str),
+                    "fps": to_num(fps_str),
+                })
+            return rows
+
+        results = []
+        for model_name in models:
+            cache_file = os.path.join(cache_dir, f"{sanitize_filename(model_name)}.txt")
+            used_cache = False
+            stdout = ""
+            stderr = ""
+            returncode = 0
+            duration = 0.0
+
+            # Use cache if available
+            if use_cache and os.path.exists(cache_file):
+                try:
+                    with open(cache_file, "r", encoding="utf-8", errors="ignore") as f:
+                        stdout = f.read()
+                        used_cache = True
+                except Exception as _e:
+                    logger.warning(f"Failed to read cache for {model_name}: {_e}")
+
+            # Optionally only check cache status
+            if check_only and used_cache:
+                rows = parse_yolo_table(stdout)
+                best_fps = max([r.get("fps") for r in rows if r.get("fps") is not None], default=None)
+                best_inf = min([r.get("inferenceMs") for r in rows if r.get("inferenceMs") is not None], default=None)
+                results.append({
+                    "model": model_name,
+                    "from_cache": True,
+                    "cache_exists": True,
+                    "parsed": rows,
+                    "best": {"fps": best_fps, "inferenceMs": best_inf},
+                })
+                continue
+
+            # Run benchmark if no cache or not check_only
+            if not used_cache and not check_only:
+                cmd = [
+                    "sh",
+                    "-lc",
+                    f"yolo benchmark model={model_name} imgsz={imgsz} device={device}",
+                ]
+                logger.info(f"Running YOLO benchmark: {' '.join(cmd)}")
+                started = time.time()
+                try:
+                    # Create running marker
+                    running_marker = cache_file + ".running"
+                    try:
+                        with open(running_marker, "w") as _rm:
+                            _rm.write(str(time.time()))
+                    except Exception:
+                        pass
+
+                    # Stream output to cache file as it arrives
+                    with open(cache_file, "w", encoding="utf-8") as f:
+                        proc = subprocess.Popen(
+                            cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            text=True,
+                            bufsize=1,
+                        )
+                        collected = []
+                        assert proc.stdout is not None
+                        for line in proc.stdout:
+                            f.write(line)
+                            f.flush()
+                            collected.append(line)
+                            # Trim collected to last ~4000 chars for response tail
+                            if sum(len(x) for x in collected) > 5000:
+                                # Drop older lines
+                                drop = 0
+                                total = 0
+                                for idx, s in enumerate(collected):
+                                    total += len(s)
+                                    if total > 4000:
+                                        drop = idx
+                                        break
+                                if drop > 0:
+                                    collected = collected[drop:]
+                        returncode = proc.wait()
+                        stdout = "".join(collected)
+                    duration = time.time() - started
+                    stderr = ""
+                    # Remove running marker
+                    try:
+                        if os.path.exists(running_marker):
+                            os.remove(running_marker)
+                    except Exception:
+                        pass
+                except Exception as e:
+                    duration = time.time() - started
+                    logger.exception(f"Benchmark failed for model {model_name}: {e}")
+                    returncode = -1
+                    stderr = str(e)
+                    # Attempt to remove running marker on failure
+                    try:
+                        if os.path.exists(running_marker):
+                            os.remove(running_marker)
+                    except Exception:
+                        pass
+
+            # Parse and prepare response (whether from cache or fresh run)
+            def tail(text: str, max_chars: int = 4000) -> str:
+                return text[-max_chars:] if len(text) > max_chars else text
+
+            # If cache exists but parse returns empty, try reading full file (may be larger than tail)
+            file_text = stdout
+            try:
+                if os.path.exists(cache_file):
+                    with open(cache_file, "r", encoding="utf-8", errors="ignore") as fr:
+                        file_text = fr.read()
+            except Exception:
+                pass
+            rows = parse_yolo_table(file_text)
+            best_fps = max([r.get("fps") for r in rows if r.get("fps") is not None], default=None)
+            best_inf = min([r.get("inferenceMs") for r in rows if r.get("inferenceMs") is not None], default=None)
+            running_marker = cache_file + ".running"
+            results.append({
+                "model": model_name,
+                "from_cache": used_cache,
+                "cache_exists": os.path.exists(cache_file),
+                "running": os.path.exists(running_marker),
+                "returncode": returncode,
+                "duration_s": round(duration, 3) if duration else None,
+                "stdout_tail": tail(file_text),
+                "stderr_tail": tail(stderr),
+                "parsed": rows,
+                "best": {"fps": best_fps, "inferenceMs": best_inf},
+            })
+
+        return jsonify({"success": True, "results": results, "imgsz": imgsz, "device": device})
+    except Exception as e:
+        logger.error(f"Error in run_yolo_benchmark: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 if __name__ == '__main__':

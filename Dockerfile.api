@@ -12,7 +12,6 @@ RUN apt-get update -y \
     libxrender1 libxext6 libx11-6 \
     libfontconfig1 fonts-dejavu-core \
     libgomp1 \
-    wkhtmltopdf \
   && rm -rf /var/lib/apt/lists/*
 
 COPY api/requirements.txt ./api/requirements.txt
@@ -25,11 +24,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5328
 
-# Startup script to print YOLO settings, run a benchmark, then start the API
-RUN printf "#!/bin/sh\nset -e\n\n# Show YOLO/Ultralytics settings (non-fatal)\nyolo settings || true\n\n# Run benchmark on CPU for the specified model (non-fatal)\nyolo benchmark model=yolo11s-seg.pt imgsz=640 device=cpu || true\n\n# Start API server\nexec python api/index.py\n" > /app/start.sh \
-  && chmod +x /app/start.sh
-
-  RUN printf "#!/bin/sh\nset -e\n\n# Show YOLO/Ultralytics settings (non-fatal)\nyolo settings || true\n\n# Run benchmark on CPU for the specified model (non-fatal)\nyolo benchmark model=yolo11n-seg.pt imgsz=640 device=cpu || true\n\n# Start API server\nexec python api/index.py\n" > /app/start-2.sh \
-  && chmod +x /app/start-2.sh
-
-CMD ["/bin/sh", "/app/start.sh", "/app/start-2.sh"]
+CMD ["python", "api/index.py"]

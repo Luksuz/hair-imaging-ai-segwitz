@@ -29,9 +29,86 @@ function HomeContent() {
   const [imageInfo, setImageInfo] = useState<{width: number, height: number, name: string} | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showBenchmark, setShowBenchmark] = useState(false);
+  const pollRef = useRef<number | null>(null);
   const [isOriginalExpanded, setIsOriginalExpanded] = useState(false);
   const [isProcessedExpanded, setIsProcessedExpanded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [benchmarkResults, setBenchmarkResults] = useState<any | null>(null);
+  const [benchmarkModels, setBenchmarkModels] = useState<string[]>(["yolo11n-seg.pt", "yolo11s-seg.pt", "yolo11m-seg.pt"]);
+
+  // Parse YOLO CLI benchmark text output into structured rows
+  const parseYoloBenchmark = (raw: string): Array<{ format: string; status: string; sizeMB: number | null; map: number | null; inferenceMs: number | null; fps: number | null; }> => {
+    if (!raw) return [];
+    // Strip ANSI color codes
+    const text = raw.replace(/\u001b\[[0-9;]*m/g, "");
+    const lines = text.split(/\r?\n/);
+    const headerIdx = lines.findIndex(l => l.includes("Format") && l.includes("Inference time") && l.includes("FPS"));
+    if (headerIdx === -1) return [];
+    const rows: Array<{ format: string; status: string; sizeMB: number | null; map: number | null; inferenceMs: number | null; fps: number | null; }> = [];
+    for (let i = headerIdx + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      // Stop at footer or non-table content
+      if (line.startsWith("💡") || line.toLowerCase().startsWith("learn more")) break;
+      // Expect lines starting with index number
+      if (!/^\d+\s+/.test(line)) continue;
+      const withoutIndex = line.replace(/^\d+\s+/, "");
+      const cols = withoutIndex.split(/\s{2,}/).map(s => s.trim());
+      if (cols.length < 6) continue;
+      const [fmt, status, sizeStr, mapStr, infStr, fpsStr] = cols;
+      const toNum = (v: string): number | null => (v === "-" || v === "") ? null : (Number(v.replace(/[^0-9.-]/g, "")) || null);
+      rows.push({
+        format: fmt,
+        status,
+        sizeMB: toNum(sizeStr),
+        map: toNum(mapStr),
+        inferenceMs: toNum(infStr),
+        fps: toNum(fpsStr),
+      });
+    }
+    return rows;
+  };
+
+  // Poll backend for cached/parsed results while benchmarking
+  useEffect(() => {
+    const shouldPoll = showBenchmark && (benchmarkLoading || (benchmarkResults?.results || []).some((r: any) => !Array.isArray(r?.parsed) || r.parsed.length === 0));
+    if (!shouldPoll) {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      return;
+    }
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/benchmark", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ models: benchmarkModels, check_only: true }),
+        });
+        const data = await res.json();
+        setBenchmarkResults(data);
+        const allParsed = Array.isArray(data?.results) && data.results.length > 0 && data.results.every((r: any) => Array.isArray(r?.parsed) && r.parsed.length > 0);
+        if (allParsed && pollRef.current) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+          setBenchmarkLoading(false);
+        }
+      } catch (_) {}
+    };
+    tick();
+    if (!pollRef.current) {
+      pollRef.current = window.setInterval(tick, 3000);
+    }
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [showBenchmark, benchmarkLoading, benchmarkModels, (benchmarkResults as any)?.results?.length]);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -1518,12 +1595,20 @@ function HomeContent() {
       <BackgroundElements />
       
       {/* Logout button for main upload page */}
-      <button
-        onClick={handleLogout}
-        className="absolute top-8 right-8 inline-flex items-center gap-2 text-neutral-400 hover:text-red-400 transition-colors z-20"
-      >
-        Logout →
-      </button>
+      <div className="absolute top-8 right-8 flex items-center gap-6 z-20">
+        <button
+          onClick={() => setShowBenchmark(v => !v)}
+          className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
+        >
+          Benchmark
+        </button>
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center gap-2 text-neutral-400 hover:text-red-400 transition-colors"
+        >
+          Logout →
+        </button>
+      </div>
       
       <div className="mx-auto max-w-6xl px-4 min-h-[80vh] flex flex-col justify-center relative z-10">
         {/* Main content section - always centered */}
@@ -1550,6 +1635,138 @@ function HomeContent() {
 
           <section className="self-center">
             <p className="text-center text-white mb-6 text-2xl">Please upload an image or select a demo image to get started.</p>
+
+            {/* YOLO Benchmark Controls (toggled) */}
+            {showBenchmark && (
+            <div className="mt-6 mb-8 rounded-2xl border border-white/20 bg-neutral-900/50 p-4">
+              <div className="flex flex-col gap-3">
+                <div className="text-white font-bold">YOLO v11 Seg Benchmark</div>
+                <div className="text-sm text-neutral-300">Select models and run a quick benchmark on CPU via the backend.</div>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  {[
+                    "yolo11n-seg.pt",
+                    "yolo11s-seg.pt",
+                    "yolo11m-seg.pt",
+                    "yolo11l-seg.pt",
+                    "yolo11x-seg.pt",
+                  ].map((m) => {
+                    const selected = benchmarkModels.includes(m);
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => {
+                          setBenchmarkModels((prev) =>
+                            prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
+                          );
+                        }}
+                        className={`px-3 py-1 rounded-full border ${selected ? "border-rose-500 text-white" : "border-white/20 text-neutral-300"}`}
+                      >
+                        {selected ? "✓ " : ""}{m}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={async () => {
+                      try {
+                        setBenchmarkLoading(true);
+                        setBenchmarkResults(null);
+                        // First check cache-only for quick display
+                        const check = await fetch("/api/benchmark", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ models: benchmarkModels, check_only: true }),
+                        });
+                        const checkData = await check.json();
+                        setBenchmarkResults(checkData);
+                        // Then run if any model lacks cache
+                        const needsRun = Array.isArray(checkData?.results) && checkData.results.some((r: any) => !r.cache_exists);
+                        if (!needsRun) return;
+                        const res = await fetch("/api/benchmark", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ models: benchmarkModels, imgsz: 640, device: "cpu", use_cache: true }),
+                        });
+                        const data = await res.json();
+                        setBenchmarkResults(data);
+                      } catch (e) {
+                        setBenchmarkResults({ success: false, error: (e as Error).message });
+                      } finally {
+                        setBenchmarkLoading(false);
+                      }
+                    }}
+                    disabled={benchmarkLoading}
+                    className="rounded-full bg-gradient-to-r from-rose-500 to-orange-400 px-4 py-2 font-bold text-white disabled:opacity-60"
+                  >
+                    {benchmarkLoading ? "Running..." : "Run Benchmark"}
+                  </button>
+                  {benchmarkResults && (
+                    <span className={`text-sm ${benchmarkResults.success ? "text-green-400" : "text-red-400"}`}>
+                      {benchmarkResults.success ? "Benchmark complete" : `Error: ${benchmarkResults.error || "failed"}`}
+                    </span>
+                  )}
+                </div>
+                {benchmarkResults?.results && (
+                  <div className="mt-3 grid grid-cols-1 gap-4">
+                    {benchmarkResults.results.map((r: any) => {
+                      const raw = r.stdout_tail || r.stderr_tail || "";
+                      const rows = parseYoloBenchmark(raw);
+                      const validRows = rows.filter(x => x.inferenceMs !== null || x.fps !== null);
+                      const bestFps = validRows.reduce((acc, cur) => (cur.fps !== null && (acc === null || (cur.fps as number) > acc)) ? cur.fps : acc, null as number | null);
+                      const bestInf = validRows.reduce((acc, cur) => (cur.inferenceMs !== null && (acc === null || (cur.inferenceMs as number) < acc)) ? cur.inferenceMs : acc, null as number | null);
+                      return (
+                        <div key={r.model} className="rounded-lg border border-white/10 p-4 bg-neutral-800/50">
+                          <div className="flex items-center justify-between text-sm mb-2">
+                            <div className="text-white font-semibold">{r.model}</div>
+                            <div className="text-neutral-300">{r.duration_s}s, code {r.returncode}</div>
+                          </div>
+                          {rows.length > 0 ? (
+                            <>
+                              <div className="overflow-auto">
+                                <table className="w-full text-xs text-left">
+                                  <thead className="text-neutral-300">
+                                    <tr>
+                                      <th className="py-2 pr-3">Format</th>
+                                      <th className="py-2 pr-3">Status</th>
+                                      <th className="py-2 pr-3">Size (MB)</th>
+                                      <th className="py-2 pr-3">mAP50-95</th>
+                                      <th className="py-2 pr-3">Inference (ms/im)</th>
+                                      <th className="py-2 pr-3">FPS</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {rows.map((row, idx) => (
+                                      <tr key={idx} className="border-t border-white/10">
+                                        <td className="py-2 pr-3 text-white">{row.format}</td>
+                                        <td className="py-2 pr-3">{row.status}</td>
+                                        <td className="py-2 pr-3">{row.sizeMB ?? '-'}</td>
+                                        <td className="py-2 pr-3">{row.map ?? '-'}</td>
+                                        <td className={`py-2 pr-3 ${row.inferenceMs !== null && row.inferenceMs === bestInf ? 'text-green-400 font-semibold' : ''}`}>{row.inferenceMs ?? '-'}</td>
+                                        <td className={`py-2 pr-3 ${row.fps !== null && row.fps === bestFps ? 'text-green-400 font-semibold' : ''}`}>{row.fps ?? '-'}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                              {(bestInf !== null || bestFps !== null) && (
+                                <div className="mt-2 text-[11px] text-neutral-300">
+                                  {bestInf !== null && <span className="mr-4">Best inference: <span className="text-white font-semibold">{bestInf} ms</span></span>}
+                                  {bestFps !== null && <span>Best FPS: <span className="text-white font-semibold">{bestFps}</span></span>}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <pre className="mt-2 text-xs text-neutral-300 whitespace-pre-wrap max-h-48 overflow-auto">{raw || "(no output)"}</pre>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            )}
             
             {/* Upload box */}
             <div className="rounded-3xl border border-white/20 bg-neutral-800/60 p-12 mb-8 min-h-[400px] flex flex-col items-center justify-center">
